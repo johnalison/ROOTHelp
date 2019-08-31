@@ -1,6 +1,7 @@
 #from ROOT import 
 import ROOT
-ROOT.gROOT.SetMacroPath(ROOT.gROOT.GetMacroPath()+":../../ROOTHelp")
+import sys
+ROOT.gROOT.SetMacroPath(ROOT.gROOT.GetMacroPath()+(":").join(sys.path))
 ROOT.gROOT.LoadMacro("FancyROOTStyle.C")
 ROOT.SetFancyStyle()
 
