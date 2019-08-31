@@ -433,11 +433,11 @@ def stack_with_data(data, mc, name, **kw):
     #
     # defaults
     #
-    title             = kw.get('title',             ROOTCoreOLD.default)
+    title             = kw.get('title',             ROOTHelp.default)
     ymin              = kw.get('min',               None)
-    ymax              = kw.get('max',               ROOTCoreOLD.default)
+    ymax              = kw.get('max',               ROOTHelp.default)
     plot_options      = kw.get('plot_options',      None)
-    canvas_options    = kw.get('canvas_options',    ROOTCoreOLD.default)
+    canvas_options    = kw.get('canvas_options',    ROOTHelp.default)
     draw_options      = kw.get('draw_options',      'hist')
     show_stats        = kw.get('show_stats',        False)
     max_factor        = kw.get('max_factor',        None)
@@ -496,7 +496,7 @@ def stack_with_data(data, mc, name, **kw):
 #   Make a stack plot with a ratio below
 # 
 def stack_with_data_and_ratio(data, mc, name,**kw):
-    canvas_options= kw.get('canvas_options', ROOTCoreOLD.default)
+    canvas_options= kw.get('canvas_options', ROOTHelp.default)
 
     x_title = data.GetXaxis().GetTitle()
 
@@ -518,8 +518,8 @@ def stack_with_data_and_ratio(data, mc, name,**kw):
     ratio.GetYaxis().SetNdivisions(507)
 
     #    set_min_max_ratio([ratio],2.0)
-    rMin = kw.get("rMin",ROOTCoreOLD.default)
-    rMax = kw.get("rMax",ROOTCoreOLD.default)
+    rMin = kw.get("rMin",ROOTHelp.default)
+    rMax = kw.get("rMax",ROOTHelp.default)
     set_min([ratio],  rMin, log_y=canvas_options.log_y)
     set_max([ratio],  rMax, log_y=canvas_options.log_y)
     stack['ratio']=ratio
@@ -564,11 +564,11 @@ def stack_no_data(mc, name, **kw):
     #
     # defaults
     #
-    title             = kw.get('title',             ROOTCoreOLD.default)
+    title             = kw.get('title',             ROOTHelp.default)
     ymin              = kw.get('min',               None)
-    ymax              = kw.get('max',               ROOTCoreOLD.default)
+    ymax              = kw.get('max',               ROOTHelp.default)
     plot_options      = kw.get('plot_options',      None)
-    canvas_options    = kw.get('canvas_options',    ROOTCoreOLD.default)
+    canvas_options    = kw.get('canvas_options',    ROOTHelp.default)
     draw_options      = kw.get('draw_options',      'hist')
     show_stats        = kw.get('show_stats',        False)
     max_factor        = kw.get('max_factor',        None)
