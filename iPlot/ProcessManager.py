@@ -17,11 +17,11 @@ import string
 #
 #  The dirty work
 #
-import ROOTCoreOLD
-from   ROOTCoreOLD.CanvasOptions import CanvasOptions 
-from   ROOTCoreOLD.PlotOptions   import PlotOptions
-from   ROOTCoreOLD.Plotting      import stack_with_data, stack_with_data_and_ratio, plot_hist, plot_hists, plot_hists_wratio, stack_no_data, plot_hists_wratio_errorband
-from   ROOTCoreOLD.Utils         import make_legend, calc_max_in_range, do_variable_rebinning, calc_min
+import ROOTHelp
+from   ROOTHelp.CanvasOptions import CanvasOptions 
+from   ROOTHelp.PlotOptions   import PlotOptions
+from   ROOTHelp.Plotting      import stack_with_data, stack_with_data_and_ratio, plot_hists, plot_hists_wratio, stack_no_data, plot_hists_wratio_errorband
+from   ROOTHelp.Utils         import make_legend, calc_max_in_range, do_variable_rebinning, calc_min
 
 # ----------------------------------------------------------------------------
 class ProcessManager:
@@ -436,7 +436,7 @@ class ProcessManager:
         doratio        =  kw.get('doratio'      ,  False)
         logy           =  kw.get('logy'         ,  False)
         logx           =  kw.get('logx'         ,  False)
-        maxy           =  kw.get('maxy'         ,  ROOTCoreOLD.default)
+        maxy           =  kw.get('maxy'         ,  ROOTHelp.default)
         rMin           =  kw.get('rMin'         ,  None)
         rMax           =  kw.get('rMax'         ,  None)
         label          =  kw.get('label'        ,  None)
@@ -583,8 +583,8 @@ class ProcessManager:
         doLeg          =  kw.get('doLeg'        ,  True)
         doratio        =  kw.get('doratio'      ,  False)
         norm           =  kw.get('norm'         ,  False)
-        draw_options   =  kw.get('draw_options' ,  ROOTCoreOLD.default)
-        max            =  kw.get('max'          ,  ROOTCoreOLD.default)
+        draw_options   =  kw.get('draw_options' ,  ROOTHelp.default)
+        max            =  kw.get('max'          ,  ROOTHelp.default)
 
 
         #
@@ -671,7 +671,7 @@ class ProcessManager:
 
         if doLeg:
             
-            if draw_options is ROOTCoreOLD.default:
+            if draw_options is ROOTHelp.default:
                 draw_options = []
                 for i, p in enumerate(hists):
                     if not i:

@@ -291,3 +291,17 @@ def makeCanvas(name, title, **kw):
         return c
 
 
+#
+# Calculates the max of the a bunch of hists in a given range
+#
+def calc_max_in_range(hists,x1,x2,incErr=True):
+    m=-1e10
+    for h in hists:
+        xaxis=h.GetXaxis()
+        for b in range(xaxis.FindBin(x1),max(xaxis.FindBin(x2),xaxis.FindBin(x1)+1)):
+            if incErr:
+                m=max(m,h.GetBinContent(b)+h.GetBinError(b))
+            else:
+                m=max(m,h.GetBinContent(b))
+
+    return m

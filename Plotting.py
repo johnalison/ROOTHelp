@@ -413,3 +413,267 @@ def plot_hists_wratio( hists, name, **kw):
     plot['ratio_axis'] = shared['ratio_axis']
     
     return plot
+
+
+
+#
+# Depreicated
+#
+######################
+######################
+######################
+######################
+
+
+#
+#  Stack Data and MC
+#
+def stack_with_data(data, mc, name, **kw):
+
+    #
+    # defaults
+    #
+    title             = kw.get('title',             ROOTCoreOLD.default)
+    ymin              = kw.get('min',               None)
+    ymax              = kw.get('max',               ROOTCoreOLD.default)
+    plot_options      = kw.get('plot_options',      None)
+    canvas_options    = kw.get('canvas_options',    ROOTCoreOLD.default)
+    draw_options      = kw.get('draw_options',      'hist')
+    show_stats        = kw.get('show_stats',        False)
+    max_factor        = kw.get('max_factor',        None)
+    data_plot_options = kw.get('data_plot_options', None)
+    x_min             = kw.get("x_min",None)
+    x_max             = kw.get("x_max",None)
+
+    plot = stack_hists(
+        hists         = mc,
+        name          = name,
+        title         = title,
+        min           = None,
+        max           = None,
+        plot_options  = plot_options,
+        canvas_options= canvas_options,
+        draw_options  = draw_options,
+        show_stats    = show_stats,
+        x_min         = x_min,
+        x_max         = x_max,
+        )
+
+    # make the stack sum
+    stacksum=mc[0].Clone("tmp")
+    stacksum.Reset()
+    for h in mc:
+        stacksum.Add(h)
+    
+    # make stack plot
+    stack = plot['stack']
+
+    # set min/max
+    if canvas_options.log_y:
+        for b in range(1,data.GetNbinsX()+1):
+            if data.GetBinContent(b) > 0.0:
+                if ymin==None:
+                    ymin=1e10
+                ymin=min(ymin,0.1*data.GetBinContent(b))
+
+    set_min([data, stack, stacksum], ymin, log_y=canvas_options.log_y)
+    set_max([data, stack, stacksum], ymax, log_y=canvas_options.log_y)
+
+    # draw data
+    if data_plot_options:
+        data_plot_options.configure(data)
+    # data.GetXaxis().SetTitle("")
+    # data.GetYaxis().SetTitle("")
+    data.Draw('PE same')
+    
+    plot['canvas'].Update()    
+    plot['data'] = data
+    plot['sum'] = stacksum
+    return plot
+
+
+# 
+#   Make a stack plot with a ratio below
+# 
+def stack_with_data_and_ratio(data, mc, name,**kw):
+    canvas_options= kw.get('canvas_options', ROOTCoreOLD.default)
+
+    x_title = data.GetXaxis().GetTitle()
+
+    #
+    # make stack
+    #
+    stack = stack_with_data(data, mc, name,**kw)
+
+    #
+    # make ratio
+    #
+    data=stack['data']
+    ratio=data.Clone(data.GetName()+"_ratio")
+    ratio.Divide(stack['sum'])
+    ratio_plot_options = PlotOptions()
+    ratio_plot_options.configure(ratio)
+    ratio.GetYaxis().SetTitle("Data/MC")
+    ratio.GetXaxis().SetTitle(x_title)
+    ratio.GetYaxis().SetNdivisions(507)
+
+    #    set_min_max_ratio([ratio],2.0)
+    rMin = kw.get("rMin",ROOTCoreOLD.default)
+    rMax = kw.get("rMax",ROOTCoreOLD.default)
+    set_min([ratio],  rMin, log_y=canvas_options.log_y)
+    set_max([ratio],  rMax, log_y=canvas_options.log_y)
+    stack['ratio']=ratio
+
+    x_min = kw.get("x_min",None)
+    x_max = kw.get("x_max",None)
+
+
+    # draw ratio
+
+    canvas_options.log_y=False
+    ratio_canvas  = canvas_options.create(name+"_ratio")
+
+    if x_min or x_max:
+        setXMinMax(ratio,x_min,x_max)
+        
+    ratio.Draw("PE")
+    line=ROOT.TLine()
+    a=ratio.GetXaxis()
+    if x_min or x_max:
+        x_min, x_max = getXMinMax(ratio, x_min, x_max)
+        line.DrawLine(x_min,1.0,x_max,1.0)
+    else:
+        line.DrawLine(a.GetXmin(),1.0,a.GetXmax(),1.0)
+ 
+    shared = plot_shared_axis(stack['canvas'],ratio_canvas,name+"_with_ratio",split=0.3,axissep=0.04,ndivs=[505,503])
+    #stack['top_canvas']=stack['canvas']
+    #stack['bottom_canvas']=ratio_canvas
+    stack['top_pad']=shared['top_pad']
+    stack['bottom_pad']=shared['bottom_pad']
+    stack['canvas']=shared['canvas']
+    
+    return stack
+
+
+
+#
+#  Stack Data and MC
+#
+def stack_no_data(mc, name, **kw):
+
+    #
+    # defaults
+    #
+    title             = kw.get('title',             ROOTCoreOLD.default)
+    ymin              = kw.get('min',               None)
+    ymax              = kw.get('max',               ROOTCoreOLD.default)
+    plot_options      = kw.get('plot_options',      None)
+    canvas_options    = kw.get('canvas_options',    ROOTCoreOLD.default)
+    draw_options      = kw.get('draw_options',      'hist')
+    show_stats        = kw.get('show_stats',        False)
+    max_factor        = kw.get('max_factor',        None)
+    x_min             = kw.get("x_min",None)
+    x_max             = kw.get("x_max",None)
+
+    plot = stack_hists(
+        hists         = mc,
+        name          = name,
+        title         = title,
+        min           = None,
+        max           = None,
+        plot_options  = plot_options,
+        canvas_options= canvas_options,
+        draw_options  = draw_options,
+        show_stats    = show_stats,
+        x_min         = x_min,
+        x_max         = x_max,
+        )
+
+    # make the stack sum
+    stacksum=mc[0].Clone("tmp")
+    stacksum.Reset()
+    for h in mc:
+        stacksum.Add(h)
+    
+    # make stack plot
+    stack = plot['stack']
+
+    # set min/max
+    if canvas_options.log_y:
+        for b in range(1,stacksum.GetNbinsX()+1):
+            if stacksum.GetBinContent(b) > 0.0:
+                if ymin==None:
+                    ymin=1e10
+                ymin=ymin#(ymin,0.1*stacksum.GetBinContent(b))
+
+    set_min([stack, stacksum], ymin, log_y=canvas_options.log_y)
+    set_max([stack, stacksum], ymax, log_y=canvas_options.log_y)
+
+    plot['canvas'].Update()    
+    plot['sum'] = stacksum
+    return plot
+
+
+#
+# Plot histsogram on top of each other 
+#
+def plot_hists_wratio_errorband( hists, histErros, name, **kw):
+    """
+    Function for formatting a list of histograms and plotting them on the same
+    canvas, stacked. Returns a dictionary with the following keys:
+    'canvas', 'stack', 'hists'.
+    """
+
+    #
+    # Calc bands
+    #
+    varUp   = []
+    varDown = []
+
+    for sysHist in histErros:
+        thisUpVar, thisDownVar = calcBinByBinDiffs(hists[1],sysHist)
+
+        if varUp:
+            varUp   = addInQuad(thisUpVar,   varUp)
+        else:
+            varUp = thisUpVar
+
+
+        if varDown:
+            varDown = addInQuad(thisDownVar, varDown)
+        else:
+            varDown = thisDownVar
+
+    #
+    # Build Band
+    #
+    xAxis = hists[0].GetXaxis()
+    nBins = xAxis.GetNbins()
+    var_band   = ROOT.TGraphAsymmErrors(nBins)
+    var_band.SetFillColor(ROOT.kRed)
+    for i in range(nBins):
+        var_band.SetPoint(i,xAxis.GetBinCenter(i+1),1.0)
+        
+        up   = varUp  [i]
+        down = varDown[i]
+        nom  = hists[1].GetBinContent(i+1)
+        
+        if nom:
+            errUp   = float(up)/nom
+            errDown = float(down)/nom
+        else:
+            errUp   = 0
+            errDown = 0
+
+        var_band.SetPointError(i,
+                               xAxis.GetBinCenter(i+1)-xAxis.GetBinLowEdge(i+1),xAxis.GetBinUpEdge(i+1)-xAxis.GetBinCenter(i+1),
+                               errUp,errDown)
+
+
+    #
+    # Make ratio
+    #
+    kw["sys_band"] = var_band
+    res = plot_hists_wratio(hists, name, **kw)
+    
+    return res
