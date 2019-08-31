@@ -238,7 +238,7 @@ def plot_shared_axis(top_hists, bottom_hists,name='',split=0.5
                     # h.GetYaxis().Set(4, h.GetYaxis().GetXmin(), h.GetYaxis().GetXmax()) 
                     # h.GetYaxis().SetBinLabel( h.GetYaxis().GetLast(), '')
 
-    return {'canvas':canvas,'ratio_axis':ratio_axis}
+    return {'canvas':canvas,'ratio_axis':ratio_axis,"top_pad":top_pad,"bottom_pad":bottom_pad}
 
 
 
@@ -410,6 +410,8 @@ def plot_hists_wratio( hists, name, **kw):
 
     plot['canvas']     = shared['canvas']
     plot['canvas'].Update()
+    plot['top_pad']=shared['top_pad']
+    plot['bottom_pad']=shared['bottom_pad']
     plot['ratio_axis'] = shared['ratio_axis']
     
     return plot
