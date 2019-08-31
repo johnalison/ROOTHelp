@@ -628,7 +628,6 @@ class ProcessManager:
                 theHists = thisHist.values(),
             
             if doratio:
-
                 if self.drawErrorBand:
                     theSysHists = self.getSysHists(thisHist.values()[0].GetName().replace("_rebin",""), **kw)
                     thePlot = plot_hists_wratio_errorband(theHists,

@@ -135,3 +135,89 @@ def calc_max_in_range(hists,x1,x2,incErr=True):
                 m=max(m,h.GetBinContent(b))
 
     return m
+
+
+#
+# From utils
+#
+
+
+
+#
+#  Get PM
+#
+from iPlot import InitPM, SetOutput
+def getPM(o):
+    pm = InitPM(model     = o.model,
+                baseDir   = o.baseDir,
+                subDir    = "",
+                histName  = o.histName,
+                output    = o.output,
+                mcscale   = o.mcscale
+                )
+    SetOutput(o.output)
+    return pm
+
+
+
+#
+# SetBatch
+# 
+def setBatch():
+    from ROOT  import gROOT
+    gROOT.SetBatch(True)
+
+
+#
+#  Call plotting and save hist (HAve to do it this way to get the reations right)
+# 
+from iPlot import plot as iplot_plot
+def plot(var,reg,**kw):
+    from iUtils import parseOpts
+    cp = iplot_plot(var,reg,**kw)
+    (o,a) = parseOpts()
+    plotName  = getPlotName(var,reg)
+    #cp['canvas'].SaveAs(o.output+"/"+plotName+".eps")
+    cp['canvas'].SaveAs(o.output+"/"+plotName+".pdf")
+    return cp
+
+#
+#  Call plotting and save hist (HAve to do it this way to get the reations right)
+# 
+from iPlot import comp as iplot_comp
+def comp(var,reg="",**kw):
+    cp = iplot_comp(var,reg,**kw)
+
+    if isinstance(reg,list):
+        regName = reg[0]
+    else:
+        regName = reg
+
+    if isinstance(var,list):
+        varName = var[0]
+    else:
+        varName = var
+
+    (o,a) = parseOpts()
+    print "regName is",regName
+    print cp
+    #cp['canvas'].SaveAs(o.output+"/"+regName+"_"+varName+".eps")
+    cp['canvas'].SaveAs(o.output+"/"+regName+"_"+varName+".pdf")
+
+
+
+#
+#  Call plotting and save hist (HAve to do it this way to get the reations right)
+# 
+from iPlot import stack as iplot_stack
+def stack(var,reg,**kw):
+    cp = iplot_stack(var,reg,**kw)
+
+    regName = reg
+    varName = var
+
+    (o,a) = parseOpts()
+    #cp['canvas'].SaveAs(o.output+"/"+regName+"_"+varName+".eps")
+    cp['canvas'].SaveAs(o.output+"/"+regName+"_"+varName+".pdf")
+    
+    return cp
