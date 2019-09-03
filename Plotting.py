@@ -31,13 +31,18 @@ def plot_hist_list(hists, **kw):
                 h.GetYaxis().SetTitle(y_title)
             if not x_title == ROOTHelp.default:
                 h.GetXaxis().SetTitle(x_title)
-            h.Draw(draw_options[i]+"PE")
 
+            if len(hists) > 1:
+                h.Draw(draw_options[i]+"PE")
+            else:
+                h.SetFillColor(ROOT.kYellow)
+                h.Draw(draw_options[i])
 
     #
     #  Redraw the points
     #
-    hists[0].Draw(draw_options[0]+"PEsame")
+    if len(hists) > 1:
+        hists[0].Draw(draw_options[0]+"PEsame")
     hists[0].Draw(draw_options[0]+"sameaxis")
 
 

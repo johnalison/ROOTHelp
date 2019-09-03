@@ -5,3 +5,6 @@ THISDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 PYTHONPATH=$PYTHONPATH:$THISDIR:$THISDIR/../:$THISDIR/iPlot:$THISDIR/iPlot/models
 
 
+
+
+alias iPlot='python -i ${THISDIR}/iPlot/iPlot.py'

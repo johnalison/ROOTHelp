@@ -606,13 +606,13 @@ class ProcessManager:
         # Outsource the actually stacking...
         #
         if len(thisHist) == 1:
-            thePlot = plot_hist(thisHist[self.order[0]],
-                                thisHist[self.order[0]].GetName()+"_stack",
-                                canvas_options = can_opts,
-                                #max = max,
-                                **kw
-                                )
-            hists  = [thePlot['hist']]
+            thePlot = plot_hists([thisHist[self.order[0]]],
+                                 thisHist[self.order[0]].GetName()+"_stack",
+                                 canvas_options = can_opts,
+                                 #max = max,
+                                 **kw
+                                 )
+            hists  = [thePlot['hists']]
             if labels:
                 labels = [labels[0]]
             else:
