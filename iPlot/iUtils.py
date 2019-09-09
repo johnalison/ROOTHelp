@@ -32,11 +32,12 @@ def parseOpts():
 
 
 def initHistory():
-
+    print "In initHistory"
     global historyPath
     historyPath = os.path.expanduser("~/pyhistory")
     try:
         import readline
+        print "imported readline."
     except ImportError:
         print "Module readline not available."
     else:

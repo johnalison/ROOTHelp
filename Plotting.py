@@ -56,7 +56,7 @@ def config_hists(hists, **kw):
     y_max             = kw.get('max',               ROOTHelp.default)
     x_min             = kw.get("x_min",             None)
     x_max             = kw.get("x_max",             None)
-    log_y             = kw.get('log_y',           False)
+    log_y             = kw.get('logy',           False)
 
     fill_colors       = kw.get('fill_colors'  ,  [ROOT.kBlack,ROOT.kYellow,ROOT.kRed])
     fill_style        = kw.get('fill_style'  ,   [ROOTHelp.default,ROOTHelp.default])
@@ -158,7 +158,7 @@ def plot_shared_axis(top_hists, bottom_hists,name='',split=0.5
     bottom_pad.Draw()
 
     top_pad.cd()
-    top_pad.SetLogy(kw.get('log_y', False))
+    top_pad.SetLogy(kw.get('logy', False))
     top_pad.SetTopMargin(canvas.GetTopMargin()*1.0/(1.0-split))
     top_pad.SetBottomMargin(0.5*axissep)
     top_pad.SetRightMargin(canvas.GetRightMargin())
@@ -370,7 +370,6 @@ def plot_hists_wratio( hists, name, **kw):
     'canvas', 'stack', 'hists'.
     """
 
-    #canvas_options = kw.get('canvas_options', ROOTHelp.default)
     logy           = kw.get('logy',     False)
     logx           = kw.get('logx',     False)
     bayesRatio     = kw.get('bayesRatio',     False)

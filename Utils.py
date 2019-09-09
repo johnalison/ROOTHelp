@@ -271,9 +271,9 @@ def make_legend(hists, labels, draw_options=ROOTHelp.default,
 def makeCanvas(name, title, **kw):
         width  = kw.get('width',         800)
         height = kw.get('height',        600)
-        log_x  = kw.get('log_x',         0)
-        log_y  = kw.get('log_y',         0)
-        log_z  = kw.get('log_z',         0)
+        log_x  = kw.get('logx',         0)
+        log_y  = kw.get('logy',         0)
+        log_z  = kw.get('logz',         0)
         #kw.get('grid_x',        0)
         #kw.get('grid_y',        0)
         #kw.get('tick_x',        1)

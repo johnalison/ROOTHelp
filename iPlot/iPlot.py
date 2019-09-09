@@ -14,7 +14,6 @@ Example in the python shell,
 
 """
 
-
 ### Parse command-line options
 ##from optparse import OptionParser
 ##p = OptionParser()
@@ -35,8 +34,6 @@ Example in the python shell,
 import sys,os
 from ROOT import TDirectory,TH1F,TH2F,TH2,TH1, ROOT
 import ROOT
-
-
 
 import sys, os
 #iStackDir = os.path.dirname(os.path.realpath(__file__))
@@ -84,16 +81,19 @@ currentVar          = None
 #output              = None
 currentLegendLimits = None
 
-
 from iUtils import initHistory, save_history, getPlotName
-initHistory()
-#from ROOT import gStyle
-#gStyle.SetPadRightMargin(0.15)
-import atexit
-atexit.register(save_history)
+from ROOTHelp.Utils         import do_variable_rebinning
 
 # =================================================================
 def main():
+
+    #from iUtils import initHistory, save_history, getPlotName
+    print "calling initHistory()"
+    initHistory()
+
+    import atexit
+    atexit.register(save_history)
+
 
     #
     # Initialize Process Manager
@@ -220,6 +220,7 @@ def plot(var, region = "",  **kw):
     isLogy     = kw.get('logy'      ,  False)
     isLogx     = kw.get('logx'      ,  False)
     plotPreFix = kw.get('plotPreFix',  "")
+    binning    = kw.get('binning'   ,  None)
     
     plotName  = getPlotName(var,region,isLogy,isLogx)
     plotName += plotPreFix
@@ -300,11 +301,21 @@ def plot(var, region = "",  **kw):
     SetYLabels(ylabel, theHists)
     SetXLabels(xlabel, theHists)
 
+    theHistsRebinned = {}
+    if binning:
+        for h in theHists:
+            print theHists
+            if isinstance(binning, list):
+                theHistsRebinned[h] = do_variable_rebinning(theHists[h], binning)
+            else:
+                theHistsRebinned[h] = theHists[h].Rebin(binning)
+    else:
+        theHistsRebinned = theHists
 
     #
     #   Make the plot
     #
-    currentPlot = pm.makePlot(theHists,
+    currentPlot = pm.makePlot(theHistsRebinned,
                               regiondesc=matchedRegion,
                               #legend_limits=currentLegendLimits,
                               plot_order = order,
@@ -698,5 +709,4 @@ def listVars(key="",region=None,subdir=None, quiet=False):
 
 # -----------------------------------------------------------------
 if __name__ == "__main__":
-    print "In iPlot"
     main()

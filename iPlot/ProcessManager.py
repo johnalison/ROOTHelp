@@ -639,7 +639,7 @@ class ProcessManager:
                 else:
                     thePlot = plot_hists_wratio(theHists,
                                                 thisHist.values()[0].GetName()+"_stack",
-                                                canvas_options = can_opts,
+                                                #canvas_options = can_opts,
                                                 #max = max,
                                                 **kw)
                 
