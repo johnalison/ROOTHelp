@@ -132,6 +132,8 @@ def InitPM(model,baseDir,subDir,histName,output,mcscale=1.0,interactive=True, de
     #  Compare files
     #
     elif len(args) == 2:
+        if model == "BasicModel":
+            Module = __import__("BasicComp")
         pm = Module.MakeModeling(baseDir,
                                  dirName = subDir,
                                  mcscale=mcscale,
