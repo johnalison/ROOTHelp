@@ -259,6 +259,19 @@ def makeBayesRatio(num, den):
     ratio.SetName(num.GetName()+"_ratio")
     return ratio
 
+#
+#
+#
+def makeBayesLikeRatio(num, den):
+    num.Sumw2()
+    den.Sumw2()
+    print "Doing Bayes-Like Ratio"
+    ratio = ROOT.TGraphAsymmErrors()#num.GetNbinsX())
+    ratio.Divide(num,den)
+    ratio.SetName(num.GetName()+"_ratio")
+    return ratio
+
+
 
 #
 #
