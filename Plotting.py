@@ -246,29 +246,114 @@ def plot_shared_axis(top_hists, bottom_hists,name='',split=0.5
     return {'canvas':canvas,'ratio_axis':ratio_axis,"top_pad":top_pad,"bottom_pad":bottom_pad}
 
 
+def moveDataPointsToBarycenter(ratio,histForXBarycenterCalc, debug=False):
+
+    for p in range(ratio.GetN()):
+        xValue = ROOT.Double(0)
+        theEff = ROOT.Double(0)
+        ratio.GetPoint(p,xValue,theEff)
+        errHigh = ratio.GetErrorXhigh(p)
+        errLow = ratio.GetErrorXlow(p)
+        
+        xMin = xValue - errLow
+        xMax = xValue + errHigh
+
+        if debug: print "Have bin",xMin,"-",xMax
+        x_values  = []
+        x_weights = []
+        sumWeights = 0
+
+        for iBinOrig in range(histForXBarycenterCalc.GetNbinsX()):        
+            thisBinCenter = histForXBarycenterCalc.GetBinCenter(iBinOrig)
+            thisNEvents   = float(histForXBarycenterCalc.GetBinContent(iBinOrig))
+            if thisBinCenter > xMin and thisBinCenter < xMax:
+                if debug: print "\tMatch ",thisBinCenter,thisNEvents
+                x_values.append(thisBinCenter)
+                x_weights.append(thisNEvents)
+                sumWeights += thisNEvents
+            
+
+        #
+        # Calculate weighted average
+        #
+        x_barycenter = 0
+
+        if sumWeights:
+            for ixV in range(len(x_values)):
+                x_barycenter += x_values[ixV] * x_weights[ixV]/sumWeights
+        else:
+            x_barycenter = xValue
+
+        ratio.SetPoint(p,x_barycenter,theEff)
+        xShift = x_barycenter - xValue
+
+        xErrLow = errLow+xShift
+        xErrHigh = errHigh-xShift
+            
+        if debug: 
+            print "OLD",xMin,"-",xMax            
+            print "NEW",x_barycenter-xErrLow,"-",x_barycenter+xErrHigh
+        ratio.SetPointError(p,xErrLow,xErrHigh,ratio.GetErrorYlow(p),ratio.GetErrorYhigh(p))
+
+        if debug: print "barycenter is ",x_barycenter
+        #print "Loop over original histograms save x_pos and weights"
+
+
+    return
+
+
 
 #
 #
 #
-def makeBayesRatio(num, den):
+def makeBayesRatio(num, den, histForXBarycenterCalc=None):
     num.Sumw2()
     den.Sumw2()
     print "Doing Bayes Ratio"
     ratio = ROOT.TGraphAsymmErrors()#num.GetNbinsX())
     ratio.BayesDivide(num,den)
     ratio.SetName(num.GetName()+"_ratio")
+
+    if histForXBarycenterCalc:
+        #
+        #  Calculate the correct barycenter of the x-bins
+        #
+        moveDataPointsToBarycenter(ratio,histForXBarycenterCalc)
+
+
     return ratio
 
 #
+#  Ratio of two hists, but return TGraphAsymmErrors like for baseDivide
 #
-#
-def makeBayesLikeRatio(num, den):
+def makeBayesLikeRatio(num, den, histForXBarycenterCalc=None):
     num.Sumw2()
     den.Sumw2()
     print "Doing Bayes-Like Ratio"
-    ratio = ROOT.TGraphAsymmErrors()#num.GetNbinsX())
-    ratio.Divide(num,den)
-    ratio.SetName(num.GetName()+"_ratio")
+    hratio = num.Clone(num.GetName()+"_rhist")
+    hratio.Divide(den)
+
+    ratio = ROOT.TGraphAsymmErrors(hratio)#num.GetNbinsX())
+
+    #
+    # Test
+    #
+    for p in range(ratio.GetN()):
+        xValue = ROOT.Double(0)
+        theEff = ROOT.Double(0)
+        ratio.GetPoint(p,xValue,theEff)
+        #print xValue-ratio.GetErrorXlow(p),"-",xValue+ratio.GetErrorXhigh(p),":",theEff,"+",ratio.GetErrorYhigh(p),"-",ratio.GetErrorYlow(p)
+        #print "\t",hratio.GetBinCenter(p+1),hratio.GetBinContent(p+1),hratio.GetBinError(p+1)
+        #errLow = ratio.GetErrorXlow(p)
+
+
+    if histForXBarycenterCalc:
+        #
+        #  Calculate the correct barycenter of the x-bins
+        #
+        moveDataPointsToBarycenter(ratio,histForXBarycenterCalc)
+
+
     return ratio
 
 
@@ -276,7 +361,7 @@ def makeBayesLikeRatio(num, den):
 #
 #
 #
-def makeRatio(num, den):
+def makeRatio(num, den, histForXBarycenterCalc=None):
     num.Sumw2()
     den.Sumw2()
     
@@ -292,6 +377,19 @@ def makeRatio(num, den):
             print "\tnum",num.GetBinContent(i+1),"+/-",num.GetBinError(i+1)
             print "\tden",den.GetBinContent(i+1),"+/-",den.GetBinError(i+1)
             print "\trat",ratio.GetBinContent(i+1),"+/-",ratio.GetBinError(i+1)
+
+
+
+    if histForXBarycenterCalc:
+        #
+        #  Calculate the correct barycenter of the x-bins
+        #
+        moveDataPointsToBarycenter(ratio,histForXBarycenterCalc)
+
+
+            
+        
+
 
     return ratio
 
