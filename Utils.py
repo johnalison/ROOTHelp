@@ -29,7 +29,7 @@ def do_variable_rebinning(hist,bins):
 
 
 def getHist(infile, histName, binning=None):
-    h = infile.Get(histName)
+    hist = infile.Get(histName)
     
     if not h:
         infile.ls()
@@ -38,6 +38,12 @@ def getHist(infile, histName, binning=None):
         print "Cannot find",histName
         print
         sys.exit(-1)
+
+    if type(binning ) == type(list()):
+        hist  = do_variable_rebinning(hist,binning)
+    else:
+        hist.Rebin(binning)
+
 
     if binning:
         print "Rebin"
@@ -247,7 +253,6 @@ def make_legend(hists, labels, draw_options=ROOTHelp.default,
     """
 
     assert len(hists) == len(labels)
-
     leg = MetaLegend(width=width, height=height, x1=x1, y1=y1, x2=x2, y2=y2)
     for h, lab, opt in zip(hists, labels, draw_options):
 
@@ -305,3 +310,218 @@ def calc_max_in_range(hists,x1,x2,incErr=True):
                 m=max(m,h.GetBinContent(b))
 
     return m
+
+
+
+def getCMSText(xStart,yStart,subtext = "Work in Progress", lumiText="",xLumiStart=0.70,yLumiStart=0.95):
+
+    yStartFirstLine = yStart
+    yStartSecondLine = yStart - 0.047
+
+    cmsScale=1.2
+    textsize=0.045
+
+    firstline = '#scale['+str(cmsScale)+']{#bf{CMS}}'
+    additionaltext = ""
+    if additionaltext == "Sim":
+        firstline += " #it{Simulation}"
+    elif additionaltext == "Supp":
+        firstline += " #it{Supplementary}"
+                    
+    cmsfistLine = ROOT.TLatex(xStart, yStartFirstLine, firstline)
+    cmsfistLine.SetTextFont(42)
+    cmsfistLine.SetTextSize(textsize)
+    cmsfistLine.SetNDC()
+
+    cmssecondline = ROOT.TLatex(xStart, yStartSecondLine, '#it{'+subtext+'}')
+    cmssecondline.SetTextFont(42)
+    cmssecondline.SetTextSize(textsize)
+    cmssecondline.SetNDC()
+
+    if lumiText:
+        cmsLumi = ROOT.TLatex(xLumiStart, yLumiStart, lumiText)
+        cmsLumi.SetTextFont(42)
+        cmsLumi.SetTextSize(0.035)
+        cmsLumi.SetNDC()
+        
+        return cmsfistLine, cmssecondline, cmsLumi
+
+    return cmsfistLine, cmssecondline
+
+
+def drawStackCompRatio(outName,dataInfo,MCInfo,yTitle,xTitle,rTitle,outDir,min=1,setLogy=1,x_min=None,x_max=None,cmsText="", lumiText=""):
+    from   ROOTHelp.Plotting      import makeRatio
+    histData = dataInfo[0].Clone()
+
+    stacksum=MCInfo[0][0].Clone("tmp")
+    stacksum.Reset()
+    for h in MCInfo:
+        stacksum.Add(h[0])
+
+    stacksum.Integral()
+    scaleFactor = histData.Integral()/stacksum.Integral()
+
+    stack = ROOT.THStack("TestStack", outName)
+    for hMC in MCInfo:
+        hMC[0].SetFillColor(hMC[2])
+        hMC[0].Scale(scaleFactor)
+        stack.Add(hMC[0], 'sames')
+
+    stacksum.Scale(scaleFactor)
+
+#    hist2 = histInfo[1][0].Clone()
+#    hist2.SetFillColor(ROOT.kYellow)
+        
+    maxY = max(histData.GetMaximum(),stack.GetMaximum())
+
+    if setLogy:
+        histData.SetMaximum(4e0*maxY)
+        histData.SetMinimum(min)
+        stack.SetMaximum(4e0*maxY)
+        stack.SetMinimum(min)
+    else:
+        stack.SetMaximum(1.4*maxY)
+        histData.SetMaximum(1.4*maxY)
+
+
+    histData.GetYaxis().SetTitle(yTitle)
+    histData.GetXaxis().SetTitle(xTitle)
+
+
+    xpos = 0.5
+    ypos = 0.69
+    xwidth = 0.3
+    ywidth = 0.05*(len(MCInfo)+1)
+    
+    leg = ROOT.TLegend(xpos, ypos, xpos+xwidth, ypos+ywidth)
+    leg.AddEntry(histData,dataInfo[1],"PEL")
+    for hMC in MCInfo:
+        leg.AddEntry(hMC[0],hMC[1] ,"F")
+    #leg.AddEntry(offLF,"Offline tracks light-flavor jets","L")
+    #leg.AddEntry(hltLF,"HLT tracks light-flavor jets"    ,"PEL")
+
+    canvas = makeCanvas(outName, outName, width=600, height=600)
+    split=0.3
+    top_pad    = ROOT.TPad("pad1", "The pad 80% of the height",0,split,1,1,0)
+    bottom_pad = ROOT.TPad("pad2", "The pad 20% of the height",0,0,1,split,0)
+    top_pad.Draw()
+    bottom_pad.Draw()
+    
+    axissep = 0.02
+    top_pad.cd()
+    top_pad.SetLogy(setLogy)
+    top_pad.SetTopMargin(canvas.GetTopMargin()*1.0/(1.0-split))
+    top_pad.SetBottomMargin(0.5*axissep)
+    top_pad.SetRightMargin(canvas.GetRightMargin())
+    top_pad.SetLeftMargin(canvas.GetLeftMargin());
+    top_pad.SetFillStyle(0) # transparent
+    top_pad.SetBorderSize(0)
+        
+
+    stack.Draw()
+    if x_max is not None and x_min is not None:
+        stack.GetXaxis().SetRangeUser(x_min,x_max)
+        histData.GetXaxis().SetRangeUser(x_min,x_max)
+
+    stack.GetYaxis().SetTitle(yTitle)
+    stack.GetXaxis().SetTitle(xTitle)
+    stack.Draw("hist")
+
+
+    #hltLF.SetMarkerSize(0.75)
+    #hltLF.SetMarkerStyle(21)
+    histData.Draw("same pe")
+    #offBQ.Draw("hist same")
+    #hltBQ.SetMarkerSize(0.75)
+    #hltBQ.SetMarkerStyle(21)
+    #hltBQ.Draw("same pe")
+    leg.Draw("same")
+
+    histRatio = makeRatio(num = histData.Clone(),  den = stacksum.Clone())
+
+    cmsLines = getCMSText(xStart=0.225,yStart=0.85,subtext=cmsText,lumiText=lumiText)
+    for cmsl in cmsLines:
+        cmsl.Draw("same")
+
+
+
+    bottom_pad.cd()
+    bottom_pad.SetTopMargin(2*axissep)
+    bottom_pad.SetBottomMargin(canvas.GetBottomMargin()*1.0/split)
+    bottom_pad.SetRightMargin(canvas.GetRightMargin())
+    bottom_pad.SetLeftMargin(canvas.GetLeftMargin());
+    bottom_pad.SetFillStyle(0) # transparent
+    bottom_pad.SetBorderSize(0)
+    ratio_axis = histData.Clone()
+    #ratio_axis.GetYaxis().SetTitle("PF to Calo")
+    ratio_axis.GetYaxis().SetTitle("Ratio")
+    ratio_axis.GetXaxis().SetTitle(histData.GetXaxis().GetTitle())
+    ratio_axis.GetYaxis().SetNdivisions(507)
+    rMin = 0
+    rMax = 2
+    ratio_axis.GetYaxis().SetRangeUser(rMin, rMax)
+    histRatio.GetYaxis().SetRangeUser(rMin, rMax)
+    histRatio.GetYaxis().SetTitle(rTitle)
+
+
+    histRatio.Draw("PE")
+    histRatio.Draw("PE same")
+    oldSize = histRatio.GetMarkerSize()
+    histRatio.SetMarkerSize(0)
+    histRatio.DrawCopy("same e0")
+    histRatio.SetMarkerSize(oldSize)
+    histRatio.Draw("PE same")
+
+    line = ROOT.TLine()
+    if x_max is not None and x_min is not None:
+        line.DrawLine(x_min, 1.0, x_max, 1.0)
+    else:
+        line.DrawLine(histData.GetXaxis().GetXmin(), 1.0, histData.GetXaxis().GetXmax(), 1.0)
+
+    ndivs=[505,503]
+
+    pads = [top_pad, bottom_pad]
+    factors = [0.8/(1.0-split), 0.7/split]
+    for i_pad, pad in enumerate(pads):
+
+        factor = factors[i_pad]
+        ndiv   = ndivs[i_pad]
+        
+        prims = [ p.GetName() for p in pad.GetListOfPrimitives() ]
+        
+        #
+        #  Protection for scaling hists multiple times
+        #
+        procedHist = []
+        
+        for name in prims:
+            
+            if name in procedHist: continue
+            procedHist.append(name)
+        
+            h = pad.GetPrimitive(name)
+            if isinstance(h, ROOT.TH1) or isinstance(h, ROOT.THStack) or isinstance(h, ROOT.TGraph) or isinstance(h, ROOT.TGraphErrors) or isinstance(h, ROOT.TGraphAsymmErrors):
+                if isinstance(h, ROOT.TGraph) or isinstance(h, ROOT.THStack) or isinstance(h, ROOT.TGraphErrors) or isinstance(h, ROOT.TGraphAsymmErrors):
+                    h = h.GetHistogram()
+                #print "factor is",factor,h.GetName(),split
+        
+                if i_pad == 1:
+                    h.SetLabelSize(h.GetLabelSize('Y')*factor, 'Y')
+                    h.SetTitleSize(h.GetTitleSize('X')*factor, 'X')
+                    h.SetTitleSize(h.GetTitleSize('Y')*factor, 'Y')
+                    h.SetTitleOffset(h.GetTitleOffset('Y')/factor, 'Y')
+                    
+                if i_pad == 1:
+                    h.GetYaxis().SetNdivisions(ndiv)
+                h.GetXaxis().SetNdivisions()                
+                if i_pad == 0:
+                    h.SetLabelSize(0.0, 'X')
+                    h.GetXaxis().SetTitle("")
+                else:
+                    h.SetLabelSize(h.GetLabelSize('X')*factor, 'X')
+                    ## Trying to remove overlapping y-axis labels.  Doesn't work.
+                    # h.GetYaxis().Set(4, h.GetYaxis().GetXmin(), h.GetYaxis().GetXmax()) 
+                    # h.GetYaxis().SetBinLabel( h.GetYaxis().GetLast(), '')
+
+
+    canvas.SaveAs(outDir+"/"+outName+".pdf")

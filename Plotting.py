@@ -1,7 +1,7 @@
 import ROOT
 import ROOTHelp
 
-from ROOTHelp.Utils       import makeCanvas, set_max, set_min, setXMinMax
+from ROOTHelp.Utils       import makeCanvas, set_max, set_min, setXMinMax, make_legend
 from ROOTHelp.PlotOptions import PlotOptions
 
 def plot_hist_list(hists, **kw):
@@ -794,3 +794,26 @@ def plot_hists_wratio_errorband( hists, histErros, name, **kw):
     res = plot_hists_wratio(hists, name, **kw)
     
     return res
+
+
+#
+# Plot histsogram on top of each other with ratio
+#
+def plot_hists_wratio_legend( hists, name, **kw):
+
+
+    plot = plot_hists_wratio(hists,name,**kw)
+
+    plot['leg'] = make_legend(hists = hists,
+                              labels = kw["labels"],
+                              width = 0.3,
+                              height= 0.05,
+                              x2 = 0.9,
+                              y2=0.9,
+                              draw_options = kw["draw_options"],
+                              )
+
+
+    plot['top_pad'].cd()
+    plot['leg'].Draw()
+    return plot
