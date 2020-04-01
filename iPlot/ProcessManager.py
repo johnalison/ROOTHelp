@@ -569,7 +569,7 @@ class ProcessManager:
                  regiondesc="",
                  **kw
                  ):
-        
+
         #
         #  Read the options
         #
@@ -585,12 +585,16 @@ class ProcessManager:
         norm           =  kw.get('norm'         ,  False)
         draw_options   =  kw.get('draw_options' ,  ROOTHelp.default)
         max            =  kw.get('max'          ,  ROOTHelp.default)
+        debug          =  kw.get('debug'        ,  False)
+        
+        if debug: print "in makePlot"
 
 
         #
         # Normalize
         #
         if norm:
+            if debug: print "Normalize"
             self.Normalize(thisHist,logy)
             
             if logy: 
@@ -606,6 +610,7 @@ class ProcessManager:
         # Outsource the actually stacking...
         #
         if len(thisHist) == 1:
+            if debug: print "MakeOne Plot"
             thePlot = plot_hists([thisHist[self.order[0]]],
                                  thisHist[self.order[0]].GetName()+"_stack",
                                  canvas_options = can_opts,
@@ -619,6 +624,7 @@ class ProcessManager:
                 doLeg = False
             
         else:
+            if debug: print "More than One plot"
             plot_order  =  kw.get('plot_order',  None)                 
             theHists = []
             if plot_order:

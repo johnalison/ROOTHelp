@@ -1,7 +1,7 @@
 import ROOT
 import ROOTHelp
 
-from ROOTHelp.Utils       import makeCanvas, set_max, set_min, setXMinMax, make_legend
+from ROOTHelp.Utils       import makeCanvas, set_max, set_min, setXMinMax, setZMinMax, make_legend
 from ROOTHelp.PlotOptions import PlotOptions
 
 def plot_hist_list(hists, **kw):
@@ -10,6 +10,9 @@ def plot_hist_list(hists, **kw):
     x_max             = kw.get("x_max",             None)
     y_title           = kw.get('y_title',           ROOTHelp.default)
     x_title           = kw.get('x_title',           ROOTHelp.default)
+    debug             = kw.get('debug',             False)
+
+    if debug: print "\t\t In plot_hist_list"
 
     #
     # Draw
@@ -18,12 +21,14 @@ def plot_hist_list(hists, **kw):
 
         # draw
         if not draw_options:
+            if debug: print "\t\t Setting draw_options to ''"
             draw_options = ""
             
         if x_min or x_max:
             setXMinMax(h, x_min, x_max)
             
         if i:
+            if debug: print "\t\t Dawing ",draw_options[i]+"same"
             h.Draw(draw_options[i]+"same")    
         else:
             #h.Draw(draw_options)
@@ -33,8 +38,10 @@ def plot_hist_list(hists, **kw):
                 h.GetXaxis().SetTitle(x_title)
 
             if len(hists) > 1:
+                if debug: print "\t\t Drawing ",draw_options[i]+"PE"
                 h.Draw(draw_options[i]+"PE")
             else:
+                if debug: print "\t\t Drawing ",draw_options[i]
                 h.SetFillColor(ROOT.kYellow)
                 h.Draw(draw_options[i])
 
@@ -56,6 +63,8 @@ def config_hists(hists, **kw):
     y_max             = kw.get('max',               ROOTHelp.default)
     x_min             = kw.get("x_min",             None)
     x_max             = kw.get("x_max",             None)
+    z_min             = kw.get("z_min",             None)
+    z_max             = kw.get("z_max",             None)
     log_y             = kw.get('logy',           False)
 
     fill_colors       = kw.get('fill_colors'  ,  [ROOT.kBlack,ROOT.kYellow,ROOT.kRed])
@@ -97,6 +106,9 @@ def config_hists(hists, **kw):
         if x_min or x_max:
             setXMinMax(h, x_min, x_max)
 
+        if z_min or z_max:
+            setZMinMax(h, z_min, z_max)
+
 
     return {'hists':hists}
     
@@ -116,6 +128,9 @@ def plot_hists( hists, name, **kw):
     #  Read the congif
     #
     show_stats        = kw.get('show_stats',        False)
+    debug             = kw.get('debug',             False)
+
+    if debug: print "\t in plot_hists"
 
     #
     #  Config Hists
@@ -127,6 +142,7 @@ def plot_hists( hists, name, **kw):
     #
     c = makeCanvas(name,name, **kw)
 
+    if debug: print "\t calling plot_hists_lists"
     plot_hist_list(hists, **kw)
 
     # arrange stats

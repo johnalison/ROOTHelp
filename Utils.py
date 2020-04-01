@@ -242,6 +242,18 @@ def setXMinMax(hist, x_min, x_max):
     x_min, x_max = getXMinMax(hist, x_min, x_max)
     hist.GetXaxis().SetRangeUser(x_min,x_max) 
 
+def getZMinMax(hist, z_min, z_max):
+    if not z_max:
+        z_max = hist.GetZaxis().GetXmax()
+    if not z_min:
+        z_min = hist.GetZaxis().GetXmin()
+    return z_min, z_max
+
+
+def setZMinMax(hist, z_min, z_max):
+    z_min, z_max = getZMinMax(hist, z_min, z_max)
+    hist.GetZaxis().SetRangeUser(z_min,z_max) 
+
 
 #
 #   Creates a legend from a list of hists (or graphs).
