@@ -167,6 +167,8 @@ def getPM(o):
 def setBatch():
     from ROOT  import gROOT
     gROOT.SetBatch(True)
+    import ROOT
+    ROOT.gErrorIgnoreLevel = ROOT.kWarning
 
 
 #
