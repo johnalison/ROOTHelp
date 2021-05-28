@@ -263,7 +263,7 @@ def plot(var, region = "",  **kw):
 
 
     elif not isinstance(var,list) and isinstance(region,list):
-        print "will plot vars from ",len(region)," differnt folders" 
+        print "plot: will plot var from ",len(region)," differnt folders" 
         matchedRegion = [getRegName(region[0]),getRegName(region[1])]
         pm.updateDirs(matchedRegion[0])
 
@@ -273,15 +273,28 @@ def plot(var, region = "",  **kw):
         if var.find("*") != -1: return listVars(var.replace("*",""),regionName)
 
         for i, rName in enumerate(matchedRegion):
+            print "plot: update dirs",matchedRegion[i]
             pm.updateDirs(matchedRegion[i])
 
             if not i :
                 order.append(pm.order[0])
+                print "plot: order",order
                 theHists[pm.order[0]] = pm.getHists(varName, **kw)[pm.order[0]]
+                print "plot:",theHists[pm.order[0]].Integral()
             else:
-                order.append(rName)
-                theHists[rName] = pm.getHists(varName, **kw)[pm.order[0]]
+                if len(pm.order)-1 < i:
+                    order.append(rName)
+                    #print "plot: order",order
+                    #print pm.getHists(varName, **kw)
+                    theHists[rName] = pm.getHists(varName, **kw)[pm.order[0]]
+                    #print "plot:",theHists[pm.order[i]].Integral()
 
+                else:
+                    order.append(pm.order[i])
+                    print "plot: order",order
+                    print pm.getHists(varName, **kw)
+                    theHists[pm.order[i]] = pm.getHists(varName, **kw)[pm.order[-1]]
+                    print "plot:",theHists[pm.order[i]].Integral()
     else:
         regionName = getRegName(region)
         pm.updateDirs(regionName)
@@ -375,7 +388,7 @@ def comp(var, region="",  **kw):
 
     elif not isinstance(var,list) and isinstance(region,list):
 
-        print "will plot vars from ",len(region)," differnt folders" 
+        print "will plot var from ",len(region)," differnt folders" 
         varName = var
         regionName = region[0]
 
