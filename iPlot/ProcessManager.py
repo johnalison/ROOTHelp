@@ -6,7 +6,7 @@
 import os
 import math
 from ROOT import TFile,TH1F,TH2,TDirectory,ROOT, TLine, Double
-
+import ROOT
 #import PlotLabeling
 
 from Process import Process
@@ -299,6 +299,7 @@ class ProcessManager:
         thisHist = {}
 
         if self.data:
+            #print "PM: getHists data"
             thisHist["Data"] = self.data.getHist(hist)
 
             if thisHist["Data"] is not None :
@@ -308,6 +309,7 @@ class ProcessManager:
         # Get the hist for each modeling type
         #
         for type in self.modeling:
+            #print "PM: getHists modeling",type
             thisHist[type] = self.modeling[type].getHist(hist)
 
             if thisHist[type] is not None :
@@ -437,8 +439,6 @@ class ProcessManager:
         logy           =  kw.get('logy'         ,  False)
         logx           =  kw.get('logx'         ,  False)
         maxy           =  kw.get('maxy'         ,  ROOTHelp.default)
-        rMin           =  kw.get('rMin'         ,  None)
-        rMax           =  kw.get('rMax'         ,  None)
         label          =  kw.get('label'        ,  None)
         labels         =  kw.get('labels'        ,  None)
         legend_limits  =  kw.get('legend_limits',  None)                 
@@ -600,8 +600,11 @@ class ProcessManager:
         #
         # Get the canvas
         #
-        can_opts = CanvasOptions(log_y=logy, log_x=logx, log_z=logz)
+        pad_right_margin = ROOTHelp.default
+        if draw_options == ["colz"]: pad_right_margin = 0.2
 
+        can_opts = CanvasOptions(log_y=logy, log_x=logx, log_z=logz, pad_right_margin=pad_right_margin)
+            
         #
         # Outsource the actually stacking...
         #
