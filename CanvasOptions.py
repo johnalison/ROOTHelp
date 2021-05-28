@@ -23,11 +23,12 @@ class CanvasOptions:
         kw.setdefault('tick_y',        1)
         kw.setdefault('left_margin',   ROOTHelp.default)
         kw.setdefault('right_margin',  ROOTHelp.default)
+        kw.setdefault('pad_right_margin',  ROOTHelp.default)
         kw.setdefault('top_margin',    ROOTHelp.default)
         kw.setdefault('bottom_margin', ROOTHelp.default)
         for k,v in kw.iteritems():
             setattr(self, k, v)
-
+        
 
     #
     #  Config canvas
@@ -53,6 +54,9 @@ class CanvasOptions:
             c.SetTopMargin(self.top_margin)
         if not self.bottom_margin is ROOTHelp.default:
             c.SetBottomMargin(self.bottom_margin)
+
+        if not self.pad_right_margin is ROOTHelp.default:
+            c.SetPadRightMargin(self.pad_right_margin)
         c.SetBorderSize(0)
         c.SetBorderMode(0)
         c.Update()
