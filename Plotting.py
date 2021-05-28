@@ -1,7 +1,7 @@
 import ROOT
 import ROOTHelp
 
-from ROOTHelp.Utils       import makeCanvas, set_max, set_min, setXMinMax, make_legend
+from ROOTHelp.Utils       import makeCanvas, set_max, set_min, setXMinMax, make_legend, setZMinMax 
 from ROOTHelp.PlotOptions import PlotOptions
 
 def plot_hist_list(hists, **kw):
@@ -10,6 +10,8 @@ def plot_hist_list(hists, **kw):
     x_max             = kw.get("x_max",             None)
     y_title           = kw.get('y_title',           ROOTHelp.default)
     x_title           = kw.get('x_title',           ROOTHelp.default)
+    debug             = kw.get('debug',             False)
+
 
     #
     # Draw
@@ -21,6 +23,8 @@ def plot_hist_list(hists, **kw):
             draw_options = ""
             
         if x_min or x_max:
+            if debug: print "x_max is ",x_max
+    
             setXMinMax(h, x_min, x_max)
             
         if i:
@@ -56,6 +60,8 @@ def config_hists(hists, **kw):
     y_max             = kw.get('max',               ROOTHelp.default)
     x_min             = kw.get("x_min",             None)
     x_max             = kw.get("x_max",             None)
+    z_min             = kw.get("z_min",             None)
+    z_max             = kw.get("z_max",             None)
     log_y             = kw.get('logy',           False)
 
     fill_colors       = kw.get('fill_colors'  ,  [ROOT.kBlack,ROOT.kYellow,ROOT.kRed])
@@ -96,6 +102,9 @@ def config_hists(hists, **kw):
 
         if x_min or x_max:
             setXMinMax(h, x_min, x_max)
+
+        if z_min or z_max:
+            setZMinMax(h, z_min, z_max)
 
 
     return {'hists':hists}
@@ -146,7 +155,7 @@ def plot_shared_axis(top_hists, bottom_hists,name='',split=0.5
     # options with defaults
     axissep       = kw.get('axissep'       ,0.0)
     ndivs         = kw.get('ndivs'           ,[503,503])
-    rLabel        = kw.get("rlabel", "Ratio")
+    r_title        = kw.get("r_title", "Ratio")
     rMin          = kw.get("rMin", 0)
     rMax          = kw.get("rMax", 2)
     bayesRatio    = kw.get('bayesRatio',     False)
@@ -175,12 +184,12 @@ def plot_shared_axis(top_hists, bottom_hists,name='',split=0.5
     bottom_pad.SetFillStyle(0) # transparent
     bottom_pad.SetBorderSize(0)
     ratio_axis = top_hists[0].Clone()
-    ratio_axis.GetYaxis().SetTitle(rLabel)
+    ratio_axis.GetYaxis().SetTitle(r_title)
     ratio_axis.GetXaxis().SetTitle(top_hists[0].GetXaxis().GetTitle())
     ratio_axis.GetYaxis().SetNdivisions(507)
     ratio_axis.GetYaxis().SetRangeUser(rMin, rMax)
     bottom_hists.GetYaxis().SetRangeUser(rMin, rMax)
-    bottom_hists.GetYaxis().SetTitle(rLabel)
+    bottom_hists.GetYaxis().SetTitle(r_title)
     
 
     if bayesRatio:
@@ -309,7 +318,7 @@ def moveDataPointsToBarycenter(ratio,histForXBarycenterCalc, debug=False):
 def makeBayesRatio(num, den, histForXBarycenterCalc=None):
     num.Sumw2()
     den.Sumw2()
-    print "Doing Bayes Ratio"
+    #print "Doing Bayes Ratio"
     ratio = ROOT.TGraphAsymmErrors()#num.GetNbinsX())
     ratio.BayesDivide(num,den)
     ratio.SetName(num.GetName()+"_ratio")
@@ -486,8 +495,10 @@ def plot_hists_wratio( hists, name, **kw):
     bayesRatio     = kw.get('bayesRatio',     False)
     statRatio      = kw.get('statRatio',     False)
     showDenError   = kw.get('showDenError',     False)
-    x_title = hists[0].GetXaxis().GetTitle()
+    x_title           = kw.get('x_title',           ROOTHelp.default)
 
+
+    
     #
     #  Config Hists
     #
@@ -516,6 +527,8 @@ def plot_hists_wratio( hists, name, **kw):
     else:
         plot["ratio"] = makeRatio(num = plot['hists'][0].Clone(),  den = plot['hists'][1].Clone())
 
+    if not x_title == ROOTHelp.default:
+        plot['ratio'].GetXaxis().SetTitle(x_title)
 
 
     #
