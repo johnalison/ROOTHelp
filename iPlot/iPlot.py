@@ -204,6 +204,18 @@ def SetOutput(output):
         os.mkdir(output)
     return 
 
+def config2D():
+    global oldMargin 
+    ROOT.gStyle.SetPalette(1)
+    oldMargin =  ROOT.gStyle.GetPadRightMargin()
+    ROOT.gStyle.SetPadRightMargin(0.2)
+
+def config1D():
+    global oldMargin 
+    ROOT.gStyle.SetPalette(1)
+    #oldMargin =  ROOT.gStyle.GetPadRightMargin()
+    ROOT.gStyle.SetPadRightMargin(oldMargin)
+
 
 
 # ----------------------------------------------------------------------------
