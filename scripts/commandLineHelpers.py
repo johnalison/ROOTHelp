@@ -57,7 +57,7 @@ def moveCursorDown(N=''):
     print '\r\033['+str(N)+'B',
 
 
-def babySit(commands, execute, maxAttempts=1, maxJobs=20, logFiles=None):
+def babySit(commands, execute, maxAttempts=1, maxJobs=3, logFiles=None):
     attempts={}
     nCommands = len(commands)
     jobs=[]
