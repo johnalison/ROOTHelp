@@ -11,7 +11,7 @@ from commandLineHelpers import babySit
 parser = optparse.OptionParser()
 parser.add_option('-e',            action="store_true", dest="execute",        default=False, help="Execute commands. Default is to just print them")
 parser.add_option('-i', '--inputPath',help="Run in loop mode")
-parser.add_option('-x', '--xrootdPrefix', default="root://cmsxrootd.fnal.gov/", help="")
+parser.add_option('-x', '--xrootdPrefix', default="root://cmseos.fnal.gov/", help="")
 parser.add_option('--xrootdCopyPrefix', default="root://cmseos.fnal.gov/", help="")
 parser.add_option('-m', '--maxFilesPerHadd', default=200, help="Run in loop mode")
 o, a = parser.parse_args()
@@ -27,6 +27,7 @@ command = eosls+o.inputPath
 stdout = None
 results = subprocess.check_output(shlex.split(command))
 subDirs = results.split()
+print "subDirs",subDirs
 
 # Yield successive n-sized 
 # chunks from l. 
@@ -36,20 +37,20 @@ def divide_chunks(l, n):
     for i in range(0, len(l), n):  
         yield l[i:i + n] 
 
-def getHaddCommands(filesToHadd,name):
+def getHaddCommands(filesToHadd,name,inputDir):
 
     haddCMDs = []
     outputs = []
 
-    filesPerJob = list(divide_chunks(filesToHadd, o.maxFilesPerHadd))
+    filesPerJob = list(divide_chunks(filesToHadd, int(o.maxFilesPerHadd)))
     nHaddJobs = int(len(filesPerJob))
 
 
     for iJob in range(nHaddJobs):
-        haddOutput = "haddOutput_"+name+"_job"+str(iJob)+".root"
+        haddOutput = o.xrootdPrefix+inputDir+"/haddOutput_"+name+"_job"+str(iJob)+".root"
         outputs.append(haddOutput)
 
-        cmd = "hadd "+haddOutput+" "
+        cmd = "hadd -f "+haddOutput+" "
         for f in filesPerJob[iJob]:
             cmd += " "+f
         haddCMDs.append(cmd)
@@ -67,7 +68,7 @@ def getSubDirOutput(inputDir, subDir):
     for f in fileNames:
         filesToHadd.append(o.xrootdPrefix+inputDir+"/"+subDir+"/"+f)
 
-    haddCMDs, outputs = getHaddCommands(filesToHadd,"subDir"+s)
+    haddCMDs, outputs = getHaddCommands(filesToHadd,"subDir"+s, inputDir)
 
     #print "Will output",outputs
     return haddCMDs, outputs
@@ -87,16 +88,16 @@ for s in subDirs:
 babySit(haddCommands, execute)
 
 
-#
-#  copy the combined files to eos
-#
-cpCommands = []
-for s in outputFiles:
-    for f in outputFiles[s]:
-        cmd = "xrdcp "+f+" "+o.xrootdCopyPrefix+o.inputPath+"/"+s+"/"+f
-        cpCommands.append(cmd)
-
-babySit(cpCommands, execute)
+###
+###  copy the combined files to eos
+###
+##cpCommands = []
+##for s in outputFiles:
+##    for f in outputFiles[s]:
+##        cmd = "xrdcp "+f+" "+o.xrootdCopyPrefix+o.inputPath+"/"+f
+##        cpCommands.append(cmd)
+##
+##babySit(cpCommands, execute)
 
 
 #
@@ -105,19 +106,31 @@ babySit(cpCommands, execute)
 fileList = []
 for s in outputFiles:
     for f in outputFiles[s]:
-        fileList.append(o.xrootdPrefix + o.inputPath +"/"+s+"/"+f)
+        #fileList.append(o.xrootdPrefix + o.inputPath +"/"+f)
+        fileList.append(f)
 
-haddCMDsCombined, outputsCombined = getHaddCommands(fileList,"All")
+haddCMDsCombined, outputsCombined = getHaddCommands(fileList,"All",o.inputPath)
 
 babySit(haddCMDsCombined, execute)
 
 
+##
+##  copy the combined file to eos
+##
+#cpCommands = []
+#for f in outputsCombined:
+#    cmd = "xrdcp "+f+" "+o.xrootdCopyPrefix+o.inputPath+"/"+f
+#    cpCommands.append(cmd)
 #
-#  copy the combined file to eos
+#babySit(cpCommands, execute)
 #
-cpCommands = []
-for f in outputsCombined:
-    cmd = "xrdcp "+f+" "+o.xrootdCopyPrefix+o.inputPath+"/"+f
-    cpCommands.append(cmd)
-
-babySit(cpCommands, execute)
+#
+##
+##  Remove the local files
+##
+#cpCommands = []
+#for f in outputsCombined:
+#    cmd = "rm -rf "+f
+#    cpCommands.append(cmd)
+#
+#babySit(cpCommands, execute)
