@@ -5,6 +5,7 @@ import sys
 import subprocess
 import shlex
 import optparse
+import numpy as np
 from threading import Thread
 try:
     from queue import Queue, Empty
@@ -12,6 +13,23 @@ except ImportError:
     from Queue import Queue, Empty  # python 2.x
 
 ON_POSIX = 'posix' in sys.builtin_module_names
+
+def getCMSSW():
+    return os.getenv('CMSSW_VERSION')
+
+def getUSER():
+    return os.getenv('USER')
+
+
+DEFAULTCMSSW   = getCMSSW()
+USER           = getUSER()
+
+DEFAULTCMSSW   = getCMSSW()
+USER           = getUSER()
+try:
+    DEFAULTTARBALL = "root://cmseos.fnal.gov//store/user/"+USER+"/condor/"+DEFAULTCMSSW+".tgz"
+except:
+    DEFAULTTARBALL = None
 
 
 def enqueue_output(out, queue, logFile):
@@ -174,3 +192,139 @@ def rmdir(directory, execute=True):
     else:
         print "#",directory,"does not exist"
 
+
+def makeTARBALL(doRun, debug=False):
+    base=os.getenv('CMSSW_BASE')
+    base=base.replace(getCMSSW(),"")
+
+    TARBALL   = "root://cmseos.fnal.gov//store/user/"+getUSER()+"/condor/"+getCMSSW()+".tgz"
+
+    if os.path.exists(base+getCMSSW()+".tgz"):
+        print "TARBALL already exists, skip making it"
+        return
+    cmd  = 'tar -C '+base+' -zcf '+base+getCMSSW()+'.tgz '+getCMSSW()
+    if debug:
+        cmd  = 'tar -C '+base+' -zcvf '+base+getCMSSW()+'.tgz '+getCMSSW()
+    cmd += ' --exclude="*.pdf" --exclude="*.jdl" --exclude="*.stdout" --exclude="*.stderr" --exclude="*.log"  --exclude="log_*" --exclude="*.stdout" --exclude="*.stderr"'
+    cmd += ' --exclude=".git" --exclude="PlotTools" --exclude="madgraph" --exclude="*.pkl" --exclude="*.root"  --exclude="*.h5"   --exclude=data*hemis*.tgz  --exclude=plotsWith*  --exclude=plotsNoFvT*  '
+    cmd += " --exclude=Signal*hemis*.tgz "
+    cmd += ' --exclude="closureTests/OLD" '
+    #cmd += ' --exclude="closureTests/nominal" '                                                                                                                                                            
+    cmd += ' --exclude=plotsRW* '
+    cmd += ' --exclude="tmp" --exclude="combine" --exclude="genproductions" --exclude-vcs --exclude-caches-all'
+    execute(cmd, doRun)
+    cmd  = 'ls '+base+' -alh'
+    execute(cmd, doRun)
+    cmd = "xrdfs root://cmseos.fnal.gov/ mkdir /store/user/"+getUSER()+"/condor"
+    execute(cmd, doRun)
+    cmd = "xrdcp -f "+base+getCMSSW()+".tgz "+TARBALL
+    execute(cmd, doRun)
+
+
+
+class jdl:
+    def __init__(self, cmd=None, CMSSW=DEFAULTCMSSW, EOSOUTDIR="None", TARBALL=DEFAULTTARBALL, fileName=None, logPath = './', logName = ''):
+        self.randName = str(np.random.uniform())[2:]
+        self.humanReadableName = ''
+        self.fileName = fileName if fileName else self.randName+".jdl"
+        if cmd:
+            fileList = [c for c in cmd.split() if '.txt' in c]
+            if fileList:
+                self.humanReadableName = fileList[0].split('/')[-1].replace('.txt','')
+                if not fileName: self.fileName = '%s_%s.jdl'%(self.humanReadableName, self.randName)
+            if 'hadd' in cmd:
+                self.humanReadableName = cmd.replace('-f','').split()[1].split('/')[-2]
+                if not fileName: self.fileName = 'hadd_%s_%s.jdl'%(self.humanReadableName, self.randName)
+        print('#', self.fileName, cmd)
+
+        if self.humanReadableName and not logName:
+            logName = 'condor_log_%s_$(Cluster)_$(Process)'%self.humanReadableName            
+        elif not logName:
+            logName = 'condor_log_$(Cluster)_$(Process)'
+
+        self.CMSSW = CMSSW
+        self.EOSOUTDIR = EOSOUTDIR # specify this to have condor.sh manually xrdcp command output to an EOS location
+        self.TARBALL = TARBALL
+
+        self.universe = "vanilla"
+        self.use_x509userproxy = "true"
+        self.Executable = "ROOTHelp/scripts/condor.sh"
+        #self.x509userproxy = "x509up_forCondor"
+        self.should_transfer_files = "YES"
+        self.when_to_transfer_output = "ON_EXIT"
+        self.Output = logPath+logName+".stdout"
+        self.Error = logPath+logName+".stderr"
+        self.Log = logPath+logName+".log"
+        self.Arguments = CMSSW+" "+EOSOUTDIR+" "+TARBALL+" "+cmd
+        self.Queue = "1" # no equals sign in .jdl file
+        
+        self.made = False
+
+    def make(self):
+        attributes=["universe",
+                    "use_x509userproxy",
+                    "Executable",
+                    #"x509userproxy",
+                    "should_transfer_files",
+                    "when_to_transfer_output",
+                    "Output",
+                    "Error",
+                    "Log",
+                    "Arguments",
+                ]
+        f=open(self.fileName,'w')
+        for attr in attributes:
+            f.write(attr+" = "+str(getattr(self, attr))+"\n")
+
+        f.write('+DesiredOS="SL7"\n')
+        f.write("Queue "+str(self.Queue)+"\n")    
+        f.close()
+
+        self.made = True
+
+
+
+def makeCondorFile(cmd,eosOutDir,eosSubdir, outputDir, filePrefix):
+    jdlFileName = filePrefix+eosSubdir
+    TARBALL = "root://cmseos.fnal.gov//store/user/"+getUSER()+"/condor/"+getCMSSW()+".tgz"
+    EOSOUTDIR = "None" if eosOutDir == "None" else eosOutDir+eosSubdir
+    thisJDL = jdl(CMSSW=getCMSSW(), EOSOUTDIR=EOSOUTDIR, TARBALL=TARBALL, cmd=cmd, fileName=outputDir+jdlFileName+".jdl", logPath=outputDir, logName=jdlFileName)
+    thisJDL.make()
+    return thisJDL.fileName
+
+
+
+
+def makeDAGFile(dag_file, dag_config, outputDir):
+    fileName = outputDir+"/"+dag_file
+    f=open(fileName,'w')
+
+    dependencies = []
+
+    if len(dag_config) > 25:
+        print "ERROR Too many subjobs ", len(dag_config)
+        sys.exit(-1)
+
+    from string import ascii_uppercase
+
+    # Name the JOB and collect the JOB names                                                                                                                                                                
+    for node_itr, node_list in enumerate(dag_config):
+        dependencies.append([])
+        for job_itr, job in enumerate(node_list):
+            jobID = ascii_uppercase[node_itr]+str(job_itr)
+            line = "JOB "+jobID+" "+job
+            f.write(line+"\n")
+            dependencies[-1].append(jobID)
+
+    # derive the structure in terms of JOB names (assume each JOB at higher level depends on all jobs below it)                                                                                             
+    for dep_itr in range(1,len(dependencies)):
+        parents = dependencies[dep_itr-1]
+
+        for child in dependencies[dep_itr]:
+            line = "PARENT "
+            for p in parents: line += p+" "
+            line += " CHILD " + child
+            f.write(line+"\n")
+
+    f.close()
+    return fileName
