@@ -33,10 +33,10 @@ def getHist(infile, histName, binning=None):
     
     if not h:
         infile.ls()
-        print
-        print "ERROR"
-        print "Cannot find",histName
-        print
+        print()
+        print( "ERROR")
+        print( "Cannot find",histName)
+        print()
         sys.exit(-1)
 
     if type(binning ) == type(list()):
@@ -46,7 +46,7 @@ def getHist(infile, histName, binning=None):
 
 
     if binning:
-        print "Rebin"
+        print( "Rebin")
         h_rebin    = do_variable_rebinning(h,binning)
         return h_rebin
 
@@ -212,7 +212,6 @@ def set_max(hists, max=ROOTHelp.default, top_buffer=0.15, bottom_buffer=0.15,
                 y_min = y
             if y > y_max:
                 y_max = y
-                print "y_max is now", y_max
         ## calculate setting with buffer
         if log_y and y_min and y_max:
             #setting = math.pow( 10, math.log(y_max,10) + (math.log(y_max,10) - math.log(y_min,10)) * top_buffer / (1 + top_buffer + bottom_buffer) )

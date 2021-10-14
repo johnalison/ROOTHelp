@@ -14,7 +14,7 @@ def plot_hist_list(hists, **kw):
     x_title           = kw.get('x_title',           ROOTHelp.default)
     debug             = kw.get('debug',             False)
 
-    if debug: print "\t\t In plot_hist_list"
+    if debug: print( "\t\t In plot_hist_list")
 
     #
     # Draw
@@ -23,16 +23,16 @@ def plot_hist_list(hists, **kw):
 
         # draw
         if not draw_options:
-            if debug: print "\t\t Setting draw_options to ''"
+            if debug: print( "\t\t Setting draw_options to ''")
             draw_options = ""
             
         if x_min or x_max:
-            if debug: print "x_max is ",x_max
+            if debug: print( "x_max is ",x_max)
     
             setXMinMax(h, x_min, x_max)
             
         if i:
-            if debug: print "\t\t Dawing ",draw_options[i]+"same"
+            if debug: print( "\t\t Dawing ",draw_options[i]+"same")
             h.Draw(draw_options[i]+"same")    
         else:
             #h.Draw(draw_options)
@@ -42,10 +42,10 @@ def plot_hist_list(hists, **kw):
                 h.GetXaxis().SetTitle(x_title)
 
             if len(hists) > 1:
-                if debug: print "\t\t Drawing ",draw_options[i]+"PE"
+                if debug: print( "\t\t Drawing ",draw_options[i]+"PE")
                 h.Draw(draw_options[i]+"PE")
             else:
-                if debug: print "\t\t Drawing ",draw_options[i]
+                if debug: print( "\t\t Drawing ",draw_options[i])
                 h.SetFillColor(ROOT.kYellow)
                 h.Draw(draw_options[i])
 
@@ -134,7 +134,7 @@ def plot_hists( hists, name, **kw):
     show_stats        = kw.get('show_stats',        False)
     debug             = kw.get('debug',             False)
 
-    if debug: print "\t in plot_hists"
+    if debug: print( "\t in plot_hists")
 
     #
     #  Config Hists
@@ -146,7 +146,7 @@ def plot_hists( hists, name, **kw):
     #
     c = makeCanvas(name,name, **kw)
 
-    if debug: print "\t calling plot_hists_lists"
+    if debug: print( "\t calling plot_hists_lists")
     plot_hist_list(hists, **kw)
 
     # arrange stats
@@ -243,7 +243,7 @@ def plot_shared_axis(top_hists, bottom_hists,name='',split=0.5
             if isinstance(h, ROOT.TH1) or isinstance(h, ROOT.THStack) or isinstance(h, ROOT.TGraph) or isinstance(h, ROOT.TGraphErrors) or isinstance(h, ROOT.TGraphAsymmErrors):
                 if isinstance(h, ROOT.TGraph) or isinstance(h, ROOT.THStack) or isinstance(h, ROOT.TGraphErrors) or isinstance(h, ROOT.TGraphAsymmErrors):
                     h = h.GetHistogram()
-                #print "factor is",factor,h.GetName(),split
+                #print( "factor is",factor,h.GetName(),split)
         
                 if i_pad == 1:
                     h.SetLabelSize(h.GetLabelSize('Y')*factor, 'Y')
@@ -278,7 +278,7 @@ def moveDataPointsToBarycenter(ratio,histForXBarycenterCalc, debug=False):
         xMin = xValue - errLow
         xMax = xValue + errHigh
 
-        if debug: print "Have bin",xMin,"-",xMax
+        if debug: print( "Have bin",xMin,"-",xMax)
         x_values  = []
         x_weights = []
         sumWeights = 0
@@ -287,7 +287,7 @@ def moveDataPointsToBarycenter(ratio,histForXBarycenterCalc, debug=False):
             thisBinCenter = histForXBarycenterCalc.GetBinCenter(iBinOrig)
             thisNEvents   = float(histForXBarycenterCalc.GetBinContent(iBinOrig))
             if thisBinCenter > xMin and thisBinCenter < xMax:
-                if debug: print "\tMatch ",thisBinCenter,thisNEvents
+                if debug: print( "\tMatch ",thisBinCenter,thisNEvents)
                 x_values.append(thisBinCenter)
                 x_weights.append(thisNEvents)
                 sumWeights += thisNEvents
@@ -311,12 +311,12 @@ def moveDataPointsToBarycenter(ratio,histForXBarycenterCalc, debug=False):
         xErrHigh = errHigh-xShift
             
         if debug: 
-            print "OLD",xMin,"-",xMax            
-            print "NEW",x_barycenter-xErrLow,"-",x_barycenter+xErrHigh
+            print( "OLD",xMin,"-",xMax            )
+            print( "NEW",x_barycenter-xErrLow,"-",x_barycenter+xErrHigh)
         ratio.SetPointError(p,xErrLow,xErrHigh,ratio.GetErrorYlow(p),ratio.GetErrorYhigh(p))
 
-        if debug: print "barycenter is ",x_barycenter
-        #print "Loop over original histograms save x_pos and weights"
+        if debug: print( "barycenter is ",x_barycenter)
+        #print( "Loop over original histograms save x_pos and weights"
 
 
     return
@@ -329,7 +329,7 @@ def moveDataPointsToBarycenter(ratio,histForXBarycenterCalc, debug=False):
 def makeBayesRatio(num, den, histForXBarycenterCalc=None):
     num.Sumw2()
     den.Sumw2()
-    #print "Doing Bayes Ratio"
+    #print( "Doing Bayes Ratio"
     ratio = ROOT.TGraphAsymmErrors()#num.GetNbinsX())
     ratio.BayesDivide(num,den)
     ratio.SetName(num.GetName()+"_ratio")
@@ -349,7 +349,7 @@ def makeBayesRatio(num, den, histForXBarycenterCalc=None):
 def makeBayesLikeRatio(num, den, histForXBarycenterCalc=None):
     num.Sumw2()
     den.Sumw2()
-    print "Doing Bayes-Like Ratio"
+    print( "Doing Bayes-Like Ratio")
     hratio = num.Clone(num.GetName()+"_rhist")
     hratio.Divide(den)
 
@@ -362,8 +362,8 @@ def makeBayesLikeRatio(num, den, histForXBarycenterCalc=None):
         xValue = ROOT.Double(0)
         theEff = ROOT.Double(0)
         ratio.GetPoint(p,xValue,theEff)
-        #print xValue-ratio.GetErrorXlow(p),"-",xValue+ratio.GetErrorXhigh(p),":",theEff,"+",ratio.GetErrorYhigh(p),"-",ratio.GetErrorYlow(p)
-        #print "\t",hratio.GetBinCenter(p+1),hratio.GetBinContent(p+1),hratio.GetBinError(p+1)
+        #print( xValue-ratio.GetErrorXlow(p),"-",xValue+ratio.GetErrorXhigh(p),":",theEff,"+",ratio.GetErrorYhigh(p),"-",ratio.GetErrorYlow(p))
+        #print( "\t",hratio.GetBinCenter(p+1),hratio.GetBinContent(p+1),hratio.GetBinError(p+1))
         #errLow = ratio.GetErrorXlow(p)
 
 
@@ -393,10 +393,10 @@ def makeRatio(num, den, histForXBarycenterCalc=None):
         xAxis = hists[0].GetXaxis()
         nBins = xAxis.GetNbins()
         for i in range(nBins):
-            print "Bin",i
-            print "\tnum",num.GetBinContent(i+1),"+/-",num.GetBinError(i+1)
-            print "\tden",den.GetBinContent(i+1),"+/-",den.GetBinError(i+1)
-            print "\trat",ratio.GetBinContent(i+1),"+/-",ratio.GetBinError(i+1)
+            print( "Bin",i)
+            print( "\tnum",num.GetBinContent(i+1),"+/-",num.GetBinError(i+1))
+            print( "\tden",den.GetBinContent(i+1),"+/-",den.GetBinError(i+1))
+            print( "\trat",ratio.GetBinContent(i+1),"+/-",ratio.GetBinError(i+1))
 
 
 
@@ -418,7 +418,7 @@ def makeRatio(num, den, histForXBarycenterCalc=None):
 #
 #
 def makeStatRatio(num, den, **kw):
-    print "Doing Stats Ratio"
+    print( "Doing Stats Ratio")
 
     mcscale        = kw.get('mcscale',       1.0)
 
@@ -466,7 +466,7 @@ def makeStatRatio(num, den, **kw):
 #
 #
 def makeDenErrorBand(den, **kw):
-    print "Doing Den Error Band"
+    print( "Doing Den Error Band")
 
     xAxis = den.GetXaxis()
     nBins = xAxis.GetNbins()
