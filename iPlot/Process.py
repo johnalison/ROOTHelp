@@ -183,7 +183,7 @@ class Process:
         totalHist = self.dir.Get(name)
 
         if not totalHist:
-            print "Couldn't get hist from ",self.fileName
+            print "Couldn't get hist ",name,"from ",self.fileName
             return None
             
         if self.makeCorrections:

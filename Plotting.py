@@ -1,7 +1,9 @@
 import ROOT
 import ROOTHelp
 
+
 from ROOTHelp.Utils       import makeCanvas, set_max, set_min, setXMinMax, setZMinMax, make_legend
+
 from ROOTHelp.PlotOptions import PlotOptions
 
 def plot_hist_list(hists, **kw):
@@ -25,6 +27,8 @@ def plot_hist_list(hists, **kw):
             draw_options = ""
             
         if x_min or x_max:
+            if debug: print "x_max is ",x_max
+    
             setXMinMax(h, x_min, x_max)
             
         if i:
@@ -162,7 +166,7 @@ def plot_shared_axis(top_hists, bottom_hists,name='',split=0.5
     # options with defaults
     axissep       = kw.get('axissep'       ,0.0)
     ndivs         = kw.get('ndivs'           ,[503,503])
-    rLabel        = kw.get("rlabel", "Ratio")
+    r_title        = kw.get("r_title", "Ratio")
     rMin          = kw.get("rMin", 0)
     rMax          = kw.get("rMax", 2)
     bayesRatio    = kw.get('bayesRatio',     False)
@@ -191,12 +195,12 @@ def plot_shared_axis(top_hists, bottom_hists,name='',split=0.5
     bottom_pad.SetFillStyle(0) # transparent
     bottom_pad.SetBorderSize(0)
     ratio_axis = top_hists[0].Clone()
-    ratio_axis.GetYaxis().SetTitle(rLabel)
+    ratio_axis.GetYaxis().SetTitle(r_title)
     ratio_axis.GetXaxis().SetTitle(top_hists[0].GetXaxis().GetTitle())
     ratio_axis.GetYaxis().SetNdivisions(507)
     ratio_axis.GetYaxis().SetRangeUser(rMin, rMax)
     bottom_hists.GetYaxis().SetRangeUser(rMin, rMax)
-    bottom_hists.GetYaxis().SetTitle(rLabel)
+    bottom_hists.GetYaxis().SetTitle(r_title)
     
 
     if bayesRatio:
@@ -502,8 +506,10 @@ def plot_hists_wratio( hists, name, **kw):
     bayesRatio     = kw.get('bayesRatio',     False)
     statRatio      = kw.get('statRatio',     False)
     showDenError   = kw.get('showDenError',     False)
-    x_title = hists[0].GetXaxis().GetTitle()
+    x_title           = kw.get('x_title',           ROOTHelp.default)
 
+
+    
     #
     #  Config Hists
     #
@@ -532,6 +538,8 @@ def plot_hists_wratio( hists, name, **kw):
     else:
         plot["ratio"] = makeRatio(num = plot['hists'][0].Clone(),  den = plot['hists'][1].Clone())
 
+    if not x_title == ROOTHelp.default:
+        plot['ratio'].GetXaxis().SetTitle(x_title)
 
 
     #

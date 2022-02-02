@@ -1,5 +1,5 @@
 
-# TriggerStudies Plotting
+# ROOTHelp Setup
 
 # Clone git ROOTHelp 
 > git clone git@github.com:johnalison/ROOTHelp.git

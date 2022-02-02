@@ -298,13 +298,19 @@ def makeCanvas(name, title, **kw):
         #kw.get('left_margin',   ROOTHelp.default)
         #kw.get('right_margin',  ROOTHelp.default)
         #kw.get('top_margin',    ROOTHelp.default)
-        #kw.get('bottom_margin', ROOTHelp.default)
+        canvas_opts = kw.get('canvas_options', ROOTHelp.default)
+
+
+
         
         c = ROOT.TCanvas(name, title, 200, 10, width, height)
         c.SetLogx(log_x)
         c.SetLogy(log_y)
         c.SetLogz(log_z)
-            
+
+        if hasattr(canvas_opts,"pad_right_margin") and not canvas_opts.pad_right_margin is ROOTHelp.default:
+            c.GetPad(0).SetRightMargin(canvas_opts.pad_right_margin)
+        
         return c
 
 
