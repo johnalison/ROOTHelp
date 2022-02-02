@@ -325,7 +325,7 @@ def moveDataPointsToBarycenter(ratio,histForXBarycenterCalc, debug=False):
 def makeBayesRatio(num, den, histForXBarycenterCalc=None):
     num.Sumw2()
     den.Sumw2()
-    print "Doing Bayes Ratio"
+    #print "Doing Bayes Ratio"
     ratio = ROOT.TGraphAsymmErrors()#num.GetNbinsX())
     ratio.BayesDivide(num,den)
     ratio.SetName(num.GetName()+"_ratio")
