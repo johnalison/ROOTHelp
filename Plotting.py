@@ -6,14 +6,28 @@ from ROOTHelp.Utils       import makeCanvas, set_max, set_min, setXMinMax, setZM
 
 from ROOTHelp.PlotOptions import PlotOptions
 
-def plot_hist_list(hists, **kw):
-    draw_options      = kw.get('draw_options',   ['hist','hist'])
-    x_min             = kw.get("x_min",             None)
-    x_max             = kw.get("x_max",             None)
-    y_title           = kw.get('y_title',           ROOTHelp.default)
-    x_title           = kw.get('x_title',           ROOTHelp.default)
-    debug             = kw.get('debug',             False)
 
+def readKW(kw,listOfOptions):
+    output = ROOTHelp.default
+    for titleName in listOfOptions:
+        if output == ROOTHelp.default: output = kw.get(titleName, ROOTHelp.default)        
+    return output
+        
+def plot_hist_list(hists, **kw):
+    draw_options   = readKW(kw, ['draw_options','draw_Options','drawOptions'])
+    x_min          = readKW(kw,["x_min","x_Min","xmin","xMin"])
+    x_max          = readKW(kw,["x_max","x_Max","xmax","xMax"])
+    debug          = readKW(kw,["debug","Debug"])
+    x_title        = readKW(kw,['x_title','x_Title', 'x_label', 'x_Label', 'x_name',  'x_Name','xtitle','xTitle', 'xlabel', 'xLabel', 'xname',  'xName'])
+    y_title        = readKW(kw,['y_title','y_Title', 'y_label', 'y_Label', 'y_name',  'y_Name','ytitle','yTitle', 'ylabel', 'yLabel', 'yname',  'yName'])
+
+
+    if x_min == ROOTHelp.default: x_min = None
+    if x_max == ROOTHelp.default: x_max = None
+    if draw_options == ROOTHelp.default: draw_options = ['hist','hist']
+    if debug == ROOTHelp.default: debug = False
+
+    
     if debug: print "\t\t In plot_hist_list"
 
     #
