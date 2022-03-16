@@ -631,12 +631,17 @@ class ProcessManager:
             plot_order  =  kw.get('plot_order',  None)                 
             theHists = []
             if plot_order:
+                if debug: print "plot_order"
                 for pName in plot_order:
+                    if debug: print "\t",pName,thisHist[pName]
                     theHists.append(thisHist[pName])
+                    
             else:
+                if debug: print "thisHist", thisHist
                 theHists = thisHist.values(),
             
             if doratio:
+                if debug: print "Do Ratio"
                 if self.drawErrorBand:
                     theSysHists = self.getSysHists(thisHist.values()[0].GetName().replace("_rebin",""), **kw)
                     thePlot = plot_hists_wratio_errorband(theHists,
@@ -653,6 +658,7 @@ class ProcessManager:
                                                 **kw)
                 
             else:
+                if debug: print "No Ratio"
                 thePlot = plot_hists(theHists,
                                      thisHist.values()[0].GetName()+"_stack",
                                      canvas_options = can_opts,
