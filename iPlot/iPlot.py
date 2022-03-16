@@ -235,7 +235,8 @@ def plot(var, region = "",  **kw):
     isLogx     = kw.get('logx'      ,  False)
     plotPreFix = kw.get('plotPreFix',  "")
     binning    = kw.get('binning'   ,  None)
-    
+    debug          =  kw.get('debug'        ,  False)
+        
     plotName  = getPlotName(var,region,isLogy,isLogx)
     plotName += plotPreFix
 
@@ -243,21 +244,27 @@ def plot(var, region = "",  **kw):
     order    = []
 
     if isinstance(var,list) and isinstance(region,list):
-        print "will plot different vars from differnt folders" 
+        if debug: print "will plot different vars from differnt folders" 
         varName    = var[0]
         matchedRegion = [getRegName(region[0]),getRegName(region[1])]
         regionName = matchedRegion[0]
 
         if varName.find("*") != -1: return listVars(varName.replace("*",""),regionName)
 
+        if debug: print "Hist 0 is "+matchedRegion[0]+"/"+var[0]
+        
         pm.updateDirs(matchedRegion[0])
         order.append(matchedRegion[0])
         theHists[matchedRegion[0]] = pm.getHists(var[0], **kw)[pm.order[0]]
-
+        if debug: print " got \t ",pm.getHists(var[0], **kw)
+        
+        if debug: print "Hist 1 is "+matchedRegion[1]+"/"+var[1]
+        
         pm.updateDirs(matchedRegion[1])
         order.append(matchedRegion[1])
-        theHists[matchedRegion[1]] = pm.getHists(var[1], **kw)[pm.order[0]]
-
+        theHists[matchedRegion[1]] = pm.getHists(var[1], **kw)[pm.order[1]]
+        if debug: print " got \t ",pm.getHists(var[1], **kw)
+        
     elif isinstance(var,list) and not isinstance(region,list):
         matchedRegion = getRegName(region)
         pm.updateDirs(matchedRegion)
@@ -328,6 +335,8 @@ def plot(var, region = "",  **kw):
     SetYLabels(ylabel, theHists)
     SetXLabels(xlabel, theHists)
 
+    if debug: print "theHists are",theHists
+    
     theHistsRebinned = {}
     if binning:
         for h in theHists:

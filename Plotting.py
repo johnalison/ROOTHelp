@@ -26,7 +26,6 @@ def plot_hist_list(hists, **kw):
     if x_max == ROOTHelp.default: x_max = None
     if draw_options == ROOTHelp.default: draw_options = ['hist','hist']
     if debug == ROOTHelp.default: debug = False
-
     
     if debug: print "\t\t In plot_hist_list"
 
@@ -42,7 +41,6 @@ def plot_hist_list(hists, **kw):
             
         if x_min or x_max:
             if debug: print "x_max is ",x_max
-    
             setXMinMax(h, x_min, x_max)
             
         if i:
@@ -280,6 +278,118 @@ def plot_shared_axis(top_hists, bottom_hists,name='',split=0.5
     return {'canvas':canvas,'ratio_axis':ratio_axis,"top_pad":top_pad,"bottom_pad":bottom_pad}
 
 
+
+def plot_shared_axis_stack(top_hists, stack, bottom_hists,name='',split=0.5
+                     ,**kw):
+
+    # options with defaults
+    axissep       = kw.get('axissep'       ,0.0)
+    ndivs         = kw.get('ndivs'           ,[503,503])
+    r_title        = kw.get("r_title", "Ratio")
+    rMin          = kw.get("rMin", 0)
+    rMax          = kw.get("rMax", 2)
+    bayesRatio    = kw.get('bayesRatio',     False)
+
+    canvas = makeCanvas(name, name, width=600, height=600)
+    top_pad    = ROOT.TPad("pad1", "The pad 80% of the height",0,split,1,1,0)
+    bottom_pad = ROOT.TPad("pad2", "The pad 20% of the height",0,0,1,split,0)
+    top_pad.Draw()
+    bottom_pad.Draw()
+
+    top_pad.cd()
+    top_pad.SetLogy(kw.get('logy', False))
+    top_pad.SetTopMargin(canvas.GetTopMargin()*1.0/(1.0-split))
+    top_pad.SetBottomMargin(0.5*axissep)
+    top_pad.SetRightMargin(canvas.GetRightMargin())
+    top_pad.SetLeftMargin(canvas.GetLeftMargin());
+    top_pad.SetFillStyle(0) # transparent
+    top_pad.SetBorderSize(0)
+
+
+    plot_hist_list(top_hists, draw_options=["pe"]*len(top_hists),**kw)
+    stack.THStack.Draw("hist same")
+    plot_hist_list(top_hists, draw_options=["pe same"]*len(top_hists),**kw)
+
+    
+    bottom_pad.cd()
+    bottom_pad.SetTopMargin(2*axissep)
+    bottom_pad.SetBottomMargin(canvas.GetBottomMargin()*1.0/split)
+    bottom_pad.SetRightMargin(canvas.GetRightMargin())
+    bottom_pad.SetLeftMargin(canvas.GetLeftMargin());
+    bottom_pad.SetFillStyle(0) # transparent
+    bottom_pad.SetBorderSize(0)
+    ratio_axis = top_hists[0].Clone()
+    ratio_axis.GetYaxis().SetTitle(r_title)
+    ratio_axis.GetXaxis().SetTitle(top_hists[0].GetXaxis().GetTitle())
+    ratio_axis.GetYaxis().SetNdivisions(507)
+    ratio_axis.GetYaxis().SetRangeUser(rMin, rMax)
+    bottom_hists.GetYaxis().SetRangeUser(rMin, rMax)
+    bottom_hists.GetYaxis().SetTitle(r_title)
+    
+
+    if bayesRatio:
+        ratio_axis.Draw("axis")
+        bottom_hists.Draw("PE")
+        ratio_axis.Draw("axis same")
+    else:
+        bottom_hists.Draw("PE")
+        if ("sys_band" in kw) and (not kw["sys_band"] == None):  kw["sys_band"].Draw("E2 same")
+        bottom_hists.Draw("PE same")
+        oldSize = bottom_hists.GetMarkerSize()
+        bottom_hists.SetMarkerSize(0)
+        bottom_hists.DrawCopy("same e0")
+        bottom_hists.SetMarkerSize(oldSize)
+        bottom_hists.Draw("PE same")
+
+    line = ROOT.TLine()
+    line.DrawLine(top_hists[0].GetXaxis().GetXmin(), 1.0, top_hists[0].GetXaxis().GetXmax(), 1.0)
+
+    pads = [top_pad, bottom_pad]
+    factors = [0.8/(1.0-split), 0.7/split]
+    for i_pad, pad in enumerate(pads):
+
+        factor = factors[i_pad]
+        ndiv   = ndivs[i_pad]
+        
+        prims = [ p.GetName() for p in pad.GetListOfPrimitives() ]
+        
+        #
+        #  Protection for scaling hists multiple times
+        #
+        procedHist = []
+        
+        for name in prims:
+            
+            if name in procedHist: continue
+            procedHist.append(name)
+        
+            h = pad.GetPrimitive(name)
+            if isinstance(h, ROOT.TH1) or isinstance(h, ROOT.THStack) or isinstance(h, ROOT.TGraph) or isinstance(h, ROOT.TGraphErrors) or isinstance(h, ROOT.TGraphAsymmErrors):
+                if isinstance(h, ROOT.TGraph) or isinstance(h, ROOT.THStack) or isinstance(h, ROOT.TGraphErrors) or isinstance(h, ROOT.TGraphAsymmErrors):
+                    h = h.GetHistogram()
+                #print "factor is",factor,h.GetName(),split
+        
+                if i_pad == 1:
+                    h.SetLabelSize(h.GetLabelSize('Y')*factor, 'Y')
+                    h.SetTitleSize(h.GetTitleSize('X')*factor, 'X')
+                    h.SetTitleSize(h.GetTitleSize('Y')*factor, 'Y')
+                    h.SetTitleOffset(h.GetTitleOffset('Y')/factor, 'Y')
+                    
+                if i_pad == 1:
+                    h.GetYaxis().SetNdivisions(ndiv)
+                h.GetXaxis().SetNdivisions()                
+                if i_pad == 0:
+                    h.SetLabelSize(0.0, 'X')
+                    h.GetXaxis().SetTitle("")
+                else:
+                    h.SetLabelSize(h.GetLabelSize('X')*factor, 'X')
+                    ## Trying to remove overlapping y-axis labels.  Doesn't work.
+                    # h.GetYaxis().Set(4, h.GetYaxis().GetXmin(), h.GetYaxis().GetXmax()) 
+                    # h.GetYaxis().SetBinLabel( h.GetYaxis().GetLast(), '')
+
+    return {'canvas':canvas,'ratio_axis':ratio_axis,"top_pad":top_pad,"bottom_pad":bottom_pad}
+
+
 def moveDataPointsToBarycenter(ratio,histForXBarycenterCalc, debug=False):
 
     for p in range(ratio.GetN()):
@@ -341,10 +451,23 @@ def moveDataPointsToBarycenter(ratio,histForXBarycenterCalc, debug=False):
 #
 #
 def makeBayesRatio(num, den, histForXBarycenterCalc=None):
+
     num.Sumw2()
     den.Sumw2()
+    #print num.GetNbinsX(),"vs",den.GetNbinsX()
     #print "Doing Bayes Ratio"
-    ratio = ROOT.TGraphAsymmErrors()#num.GetNbinsX())
+    ratio = ROOT.TGraphAsymmErrors(num.GetNbinsX())
+
+    for p in range(den.GetNbinsX()+1):
+
+        if not den.GetBinContent(p):
+            den.SetBinContent(p,1.0)
+            den.SetBinError(p,0.1)
+
+
+            
+        #print num.GetBinContent(p),num.GetBinError(p),den.GetBinContent(p),den.GetBinContent(p),den.GetBinCenter(p)
+    #print num.GetBinContent(p),num.GetBinError(p),den.GetBinContent(p),den.GetBinContent(p),den.GetBinCenter(p)    
     ratio.BayesDivide(num,den)
     ratio.SetName(num.GetName()+"_ratio")
 
@@ -561,6 +684,103 @@ def plot_hists_wratio( hists, name, **kw):
     #
     shared = plot_shared_axis(plot['hists'],  plot['ratio'], name+"_with_ratio", split=0.3, axissep=0.02, ndivs=[505,503], **kw)
 
+    plot['canvas']     = shared['canvas']
+    plot['canvas'].Update()
+    plot['top_pad']=shared['top_pad']
+    plot['bottom_pad']=shared['bottom_pad']
+    plot['ratio_axis'] = shared['ratio_axis']
+    
+    return plot
+
+
+class stackObj():
+
+
+    def __init__(self,name):
+
+        self.THStack = ROOT.THStack(name,name)
+        self.hists = []
+        self.histSum = None
+        
+    def Add(self,hist):
+        self.hists.append(hist)
+        self.THStack.Add(hist)
+        
+        if not self.histSum:
+            self.histSum = hist.Clone()
+        else:
+            self.histSum.Add(hist)
+
+#
+# Plot histsogram on top of each other 
+#
+def plot_stack_wratio( hists, stack, **kw):
+    """
+    Function for formatting a list of histograms and plotting them on the same
+    canvas, stacked. Returns a dictionary with the following keys:
+    'canvas', 'stack', 'hists'.
+    """
+
+    logy           = kw.get('logy',     False)
+    logx           = kw.get('logx',     False)
+    bayesRatio     = kw.get('bayesRatio',     False)
+    statRatio      = kw.get('statRatio',     False)
+    flipRatio      = kw.get('flipRatio',     False)
+    showDenError   = kw.get('showDenError',     False)
+    x_title           = kw.get('x_title',           ROOTHelp.default)
+
+
+
+    
+    #
+    #  Config Hists
+    #
+    plot = config_hists(hists, **kw)
+
+    #
+    #  make ratio
+    #
+    #num  = plot['hists'][0]
+    #num.Sumw2()
+    #den  = plot['hists'][1]
+    #den.Sumw2()
+    #stack.Draw("hist")
+    
+    num = plot['hists'][0].Clone()
+    den = stack.histSum
+
+    if flipRatio:
+        num = stack.histSum
+        den = plot['hists'][0].Clone()
+        
+    
+    
+    if bayesRatio:  
+        plot["ratio"] = makeBayesRatio(num = num, den = den)
+    elif showDenError: 
+        plot["ratio"] = makeRatio(num = plot['hists'][0].Clone(),  den = plot['hists'][1].Clone())
+        var_band = makeDenErrorBand(den = plot['hists'][1].Clone(), **kw) 
+        kw["sys_band"] = var_band
+        plot["sys_band"] = var_band        
+    elif statRatio: 
+        ratio, var_band = makeStatRatio(num = plot['hists'][0].Clone(), den = plot['hists'][1].Clone(), **kw) 
+        plot['ratio']  = ratio
+        kw["sys_band"] = var_band
+        plot["sys_band"] = var_band
+    else:
+        plot["ratio"] = makeRatio(num = num,  den = den)
+
+    if not x_title == ROOTHelp.default:
+        plot['ratio'].GetXaxis().SetTitle(x_title)
+
+
+    #
+    # draw ratio
+    #
+    shared = plot_shared_axis_stack(plot['hists'], stack, plot['ratio'], "_with_ratio", split=0.3, axissep=0.02, ndivs=[505,503], **kw)
+    #shared = plot_shared_axis_stack([den], stack, plot['ratio'], "_with_ratio", split=0.3, axissep=0.02, ndivs=[505,503], **kw)
+
+    
     plot['canvas']     = shared['canvas']
     plot['canvas'].Update()
     plot['top_pad']=shared['top_pad']
