@@ -180,7 +180,7 @@ class Process:
         if self.disable :
             return None
 
-        totalHist = self.dir.Get(name)
+        totalHist = self.dir.Get(name).Clone()
 
         if not totalHist:
             print "Couldn't get hist ",name,"from ",self.fileName
