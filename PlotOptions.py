@@ -23,7 +23,7 @@ class PlotOptions:
         kw.setdefault('marker_size', ROOTHelp.default)
         kw.setdefault('scale', 0) # zero means don't normalize
         kw.setdefault('norm', 0) # zero means don't normalize
-        for k,v in kw.iteritems():
+        for k,v in kw.items():
             setattr(self, k, v)
 
     #

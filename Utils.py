@@ -33,10 +33,10 @@ def getHist(infile, histName, binning=None):
     
     if not h:
         infile.ls()
-        print
-        print "ERROR"
-        print "Cannot find",histName
-        print
+        print()
+        print( "ERROR")
+        print( "Cannot find",histName)
+        print()
         sys.exit(-1)
 
     if type(binning ) == type(list()):
@@ -46,7 +46,7 @@ def getHist(infile, histName, binning=None):
 
 
     if binning:
-        print "Rebin"
+        print( "Rebin")
         h_rebin    = do_variable_rebinning(h,binning)
         return h_rebin
 
@@ -63,14 +63,14 @@ def calc_min(hists, include_errors=False, ignore_zeros=False, ignore_negatives=F
         if isinstance(h, ROOT.TH1) or isinstance(h, ROOT.THStack): 
             if isinstance(h, ROOT.THStack): 
                 h = h.GetHistogram()
-            for i_bin in xrange(1, h.GetXaxis().GetNbins()+1):
+            for i_bin in range(1, h.GetXaxis().GetNbins()+1):
                 point = h.GetBinContent(i_bin)
                 if include_errors:
                     point -= h.GetBinError(i_bin) # -= : min/max differnce
                 points.append(point)
         elif isinstance(h, ROOT.TGraph) or isinstance(h, ROOT.TGraphErrors) or isinstance(h, ROOT.TGraphAsymmErrors): 
             x = ROOT.Double() ;  y = ROOT.Double()
-            for i_bin in xrange(1, h.GetN()+1):
+            for i_bin in range(1, h.GetN()+1):
                 h.GetPoint(i_bin, x, y)
                 point = float(y)
                 if include_errors:
@@ -101,14 +101,14 @@ def calc_max(hists, include_errors=False, ignore_zeros=False, ignore_negatives=F
         if isinstance(h, ROOT.TH1) or isinstance(h, ROOT.THStack): 
             if isinstance(h, ROOT.THStack): 
                 h = h.GetHistogram()
-            for i_bin in xrange(1, h.GetXaxis().GetNbins()+1):
+            for i_bin in range(1, h.GetXaxis().GetNbins()+1):
                 point = h.GetBinContent(i_bin)
                 if include_errors:
                     point += h.GetBinError(i_bin) # -= : min/max differnce
                 points.append(point)
         elif isinstance(h, ROOT.TGraph) or isinstance(h, ROOT.TGraphErrors) or isinstance(h, ROOT.TGraphAsymmErrors): 
             x = ROOT.Double() ;  y = ROOT.Double()
-            for i_bin in xrange(1, h.GetN()+1):
+            for i_bin in range(1, h.GetN()+1):
                 h.GetPoint(i_bin, x, y)
                 point = float(y)
                 if include_errors:
@@ -212,7 +212,7 @@ def set_max(hists, max=ROOTHelp.default, top_buffer=0.15, bottom_buffer=0.15,
                 y_min = y
             if y > y_max:
                 y_max = y
-                print "y_max is now", y_max
+                print( "y_max is now", y_max)
         ## calculate setting with buffer
         if log_y and y_min and y_max:
             #setting = math.pow( 10, math.log(y_max,10) + (math.log(y_max,10) - math.log(y_min,10)) * top_buffer / (1 + top_buffer + bottom_buffer) )
@@ -279,7 +279,7 @@ def make_legend(hists, labels, draw_options=ROOTHelp.default,
                 opt = 'l'
             else: # '', 'HIST', etc.
                 opt = 'F'
-        #print "Adding entry on ",lab
+        #print( "Adding entry on ",lab)
         leg.AddEntry(h, label=lab, option=opt)
     return leg
 
@@ -521,7 +521,7 @@ def drawStackCompRatio(outName,dataInfo,MCInfo,yTitle,xTitle,rTitle,outDir,min=1
             if isinstance(h, ROOT.TH1) or isinstance(h, ROOT.THStack) or isinstance(h, ROOT.TGraph) or isinstance(h, ROOT.TGraphErrors) or isinstance(h, ROOT.TGraphAsymmErrors):
                 if isinstance(h, ROOT.TGraph) or isinstance(h, ROOT.THStack) or isinstance(h, ROOT.TGraphErrors) or isinstance(h, ROOT.TGraphAsymmErrors):
                     h = h.GetHistogram()
-                #print "factor is",factor,h.GetName(),split
+                #print( "factor is",factor,h.GetName(),split)
         
                 if i_pad == 1:
                     h.SetLabelSize(h.GetLabelSize('Y')*factor, 'Y')

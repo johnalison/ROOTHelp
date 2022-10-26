@@ -10,4 +10,4 @@ fi
 PYTHONPATH=$PYTHONPATH:$THISDIR:$THISDIR/../:$THISDIR/iPlot:$THISDIR/iPlot/models:$THISDIR/scripts
 
 
-alias iPlot='python -i ${THISDIR}/iPlot/iPlot.py'
+alias iPlot='python3 -i ${THISDIR}/iPlot/iPlot.py'

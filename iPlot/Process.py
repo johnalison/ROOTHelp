@@ -14,7 +14,7 @@ class Process:
     #  This deals with the MC subtraction in the L + D region
     def __init__(self,Name,fileName,dirName,color,corrections=None,scale=1.0,
                  regionCondition=None, disable=False, debug=False):
-        print "Processs::fileName is ",fileName
+        print( "Processs::fileName is ",fileName)
         self.debug=debug
         self.name = Name
         self.fileName = fileName
@@ -48,14 +48,14 @@ class Process:
     def Init(self):
         # First read the Data File
 
-        print "Process::Init",self.fileName,os.path.isfile(self.fileName)
+        print( "Process::Init",self.fileName,os.path.isfile(self.fileName))
         rdnm = "Reading %s (%s) " %(self.name, '/'.join(self.fileName.split('/')[-2:]))
         rdnm = rdnm.ljust(60)
         if not os.path.isfile(self.fileName) and not os.path.islink(self.fileName):
-            print rdnm + " [ \033[1;31mFailed\033[0m  ]"
+            print( rdnm + " [ \033[1;31mFailed\033[0m  ]")
             self.file = None
         else :
-            print rdnm + " [ \033[1;32mSuccess\033[0m ]" 
+            print( rdnm + " [ \033[1;32mSuccess\033[0m ]" )
             self.file = TFile(self.fileName,"READ")
 
         if self.makeCorrections:
@@ -69,9 +69,9 @@ class Process:
     # Read the files and get the directory
     def Finalize(self):
         # First read the Data File
-        print "Closing ",self.fileName
+        print( "Closing ",self.fileName)
         self.file.Close()
-        print "Closed"
+        print( "Closed")
         
         if self.makeCorrections:
             for thisCor in self.corrections:
@@ -82,11 +82,11 @@ class Process:
     # ----------------------------------------------------------------------------
     def printInfo(self):
 
-        print " -------------------------------------------------"
-        print "Process", self.name
-        print "FileName",self.fileName
-        print "DirName",self.dirName
-        print " -------------------------------------------------"
+        print( " -------------------------------------------------")
+        print( "Process", self.name)
+        print( "FileName",self.fileName)
+        print( "DirName",self.dirName)
+        print( " -------------------------------------------------")
 
 
     # ----------------------------------------------------------------------------
@@ -96,7 +96,7 @@ class Process:
         if self.openDir:
             if self.openDir != self.dirName:
                 if self.dir:
-                    #print "Closing dir",self.dir
+                    #print( "Closing dir",self.dir)
                     self.dir.Close()
         return
 
@@ -115,7 +115,7 @@ class Process:
 
         if not self.dir:
             if not self.name == "WJet" and self.debug :
-                print "Cant read Dir",self.openDir
+                print( "Cant read Dir",self.openDir)
                 self.printInfo()
             #self.file.ls()
             
@@ -158,9 +158,52 @@ class Process:
 
         if not self.dir:
             if not self.name == "WJet" and self.debug :
-                print "Cant read Dir",self.openDir
+                print( "Cant read Dir",self.openDir)
                 self.printInfo()
-            #print "Do NOT HAVE DIR",subDir
+            #self.file.ls()
+            
+            
+        if self.makeCorrections:
+            for thisCor in self.corrections:
+                self.corrections[thisCor].updateDir(subDir)
+
+        return
+
+    # ----------------------------------------------------------------------------
+    # Set the directory
+    def flushDirs(self):
+        self.file.Close()
+        self.file = TFile(self.fileName,"READ")
+        return        
+
+    # ----------------------------------------------------------------------------
+    # Set the directory
+    def updateDir(self,subDir=""):
+
+        
+        if self.dirName == '' :
+            self.openDir = subDir.lstrip("/")
+        else :
+            self.openDir = os.path.join(self.dirName,subDir.lstrip("/"))
+
+        if subDir=="" and self.dirName != '':
+            self.openDir=self.dirName
+
+        if subDir=="":
+            self.dir = self.file
+        else :
+            #self.file.Close()
+            #self.file = TFile(self.fileName,"READ")
+            if self.file is None :
+                self.dir = None
+            else :
+                self.dir = self.file.Get(self.openDir)
+
+        if not self.dir:
+            if not self.name == "WJet" and self.debug :
+                print( "Cant read Dir",self.openDir)
+                self.printInfo()
+            #print( "Do NOT HAVE DIR",subDir)
             #self.file.ls()
             
             
@@ -183,7 +226,7 @@ class Process:
         totalHist = self.dir.Get(name)
 
         if not totalHist:
-            print "Couldn't get hist ",name,"from ",self.fileName
+            print( "Couldn't get hist ",name,"from ",self.fileName)
             return None
             
         if self.makeCorrections:
@@ -192,7 +235,7 @@ class Process:
 
         if not self.scale == 1.0:
             totalHist = totalHist.Clone()
-            #print "Scaling hist to:",self.scale
+            #print( "Scaling hist to:",self.scale)
 
             totalHist.Scale(float(self.scale))
 

@@ -88,7 +88,7 @@ from ROOTHelp.Utils         import do_variable_rebinning
 def main():
 
     #from iUtils import initHistory, save_history, getPlotName
-    print "calling initHistory()"
+    print( "calling initHistory()")
     initHistory()
 
     import atexit
@@ -146,7 +146,7 @@ def InitPM(model,baseDir,subDir,histName,output,mcscale=1.0,interactive=True, de
     #  Load more complicated model
     #
     else:
-        print "Loading Custom module"
+        print( "Loading Custom module")
         pm = Module.MakeModeling(baseDir,
                                  dirName = subDir,
                                  mcscale=mcscale,
@@ -244,26 +244,26 @@ def plot(var, region = "",  **kw):
     order    = []
 
     if isinstance(var,list) and isinstance(region,list):
-        if debug: print "will plot different vars from differnt folders" 
+        if debug: print( "will plot different vars from differnt folders" )
         varName    = var[0]
         matchedRegion = [getRegName(region[0]),getRegName(region[1])]
         regionName = matchedRegion[0]
 
         if varName.find("*") != -1: return listVars(varName.replace("*",""),regionName)
 
-        if debug: print "Hist 0 is "+matchedRegion[0]+"/"+var[0]
+        if debug: print( "Hist 0 is "+matchedRegion[0]+"/"+var[0])
         
         pm.updateDirs(matchedRegion[0])
         order.append(matchedRegion[0])
         theHists[matchedRegion[0]] = pm.getHists(var[0], **kw)[pm.order[0]]
-        if debug: print " got \t ",pm.getHists(var[0], **kw)
+        if debug: print( " got \t ",pm.getHists(var[0], **kw))
         
-        if debug: print "Hist 1 is "+matchedRegion[1]+"/"+var[1]
+        if debug: print( "Hist 1 is "+matchedRegion[1]+"/"+var[1])
         
         pm.updateDirs(matchedRegion[1])
         order.append(matchedRegion[1])
         theHists[matchedRegion[1]] = pm.getHists(var[1], **kw)[pm.order[1]]
-        if debug: print " got \t ",pm.getHists(var[1], **kw)
+        if debug: print( " got \t ",pm.getHists(var[1], **kw))
         
     elif isinstance(var,list) and not isinstance(region,list):
         matchedRegion = getRegName(region)
@@ -282,7 +282,7 @@ def plot(var, region = "",  **kw):
 
 
     elif not isinstance(var,list) and isinstance(region,list):
-        print "plot: will plot var from ",len(region)," differnt folders" 
+        print( "plot: will plot var from ",len(region)," differnt folders" )
         matchedRegion = [getRegName(region[0]),getRegName(region[1])]
         pm.updateDirs(matchedRegion[0])
 
@@ -292,28 +292,30 @@ def plot(var, region = "",  **kw):
         if var.find("*") != -1: return listVars(var.replace("*",""),regionName)
 
         for i, rName in enumerate(matchedRegion):
-            print "plot: update dirs",matchedRegion[i]
+            print( "plot: update dirs",matchedRegion[i])
             pm.updateDirs(matchedRegion[i])
 
             if not i :
                 order.append(pm.order[0])
-                print "plot: order",order
+                print( "plot: order",order)
                 theHists[pm.order[0]] = pm.getHists(varName, **kw)[pm.order[0]]
-                print "plot:",theHists[pm.order[0]].Integral()
+                print( "plot:",theHists[pm.order[0]].Integral())
             else:
                 if len(pm.order)-1 < i:
                     order.append(rName)
-                    #print "plot: order",order
-                    #print pm.getHists(varName, **kw)
+                    #print( "plot: order",order)
+                    #print( pm.getHists(varName, **kw))
                     theHists[rName] = pm.getHists(varName, **kw)[pm.order[0]]
-                    #print "plot:",theHists[pm.order[i]].Integral()
+                    #print( "plot:",theHists[pm.order[i]].Integral())
 
                 else:
                     order.append(pm.order[i])
-                    print "plot: order",order
-                    print pm.getHists(varName, **kw)
+                    print( "plot: order",order)
+                    print( pm.getHists(varName, **kw))
                     theHists[pm.order[i]] = pm.getHists(varName, **kw)[pm.order[-1]]
-                    print "plot:",theHists[pm.order[i]].Integral()
+                    print( theHists)
+                    print( pm.order[i])
+                    print( "plot:",theHists[pm.order[i]].Integral())
     else:
         regionName = getRegName(region)
         pm.updateDirs(regionName)
@@ -323,9 +325,9 @@ def plot(var, region = "",  **kw):
 
         theHists = pm.getHists(var, **kw)
         #order    = theHists.values()
-        order    = theHists.keys()
+        order    = list(theHists.keys())
         order.sort()
-        #print "order is ",
+        #print( "order is ",)
         
         matchedRegion = regionName
 
@@ -335,12 +337,12 @@ def plot(var, region = "",  **kw):
     SetYLabels(ylabel, theHists)
     SetXLabels(xlabel, theHists)
 
-    if debug: print "theHists are",theHists
+    if debug: print( "theHists are",theHists)
     
     theHistsRebinned = {}
     if binning:
         for h in theHists:
-            print theHists
+            print( theHists)
             if isinstance(binning, list):
                 theHistsRebinned[h] = do_variable_rebinning(theHists[h], binning)
             else:
@@ -377,7 +379,7 @@ def comp(var, region="",  **kw):
 
     clearData()
     varName = var
-    print region
+    print( region)
     regionName = getRegName(region)
 
     #
@@ -392,7 +394,7 @@ def comp(var, region="",  **kw):
     order    = []
 
     if isinstance(var,list) and isinstance(region,list):
-        print "will plot different vars from differnt folders" 
+        print( "will plot different vars from differnt folders" )
         varName    = var[0]
         regionName = region[0]
 
@@ -409,7 +411,7 @@ def comp(var, region="",  **kw):
 
     elif not isinstance(var,list) and isinstance(region,list):
 
-        print "will plot var from ",len(region)," differnt folders" 
+        print( "will plot var from ",len(region)," differnt folders" )
         varName = var
         regionName = region[0]
 
@@ -420,13 +422,13 @@ def comp(var, region="",  **kw):
         theHists[region[0]] = pm.getHists(var, **kw)[pm.order[0]]
 
         pm.updateDirs(region[1])
-        print pm.order
+        print( pm.order)
         order.append(region[1]+pm.order[1])
         theHists[region[1]+pm.order[1]] = pm.getHists(var, **kw)[pm.order[1]]
 
     elif isinstance(var,list) and not isinstance(region,list):
 
-        print "will plot different vars from same folder"
+        print( "will plot different vars from same folder")
         varName = var[0]
         regionName = region
 
@@ -496,7 +498,7 @@ def stack(var, region,  **kw):
     order    = []
 
     if isinstance(var,list) and isinstance(region,list):
-        print "will plot different vars from differnt folders" 
+        print( "will plot different vars from differnt folders" )
         varName    = var[0]
         regionName = region[0]
 
@@ -528,7 +530,7 @@ def stack(var, region,  **kw):
 
     elif not isinstance(var,list) and isinstance(region,list):
         pm.updateDirs(region[0])
-        print "will plot vars from ",len(region)," differnt folders" 
+        print( "will plot vars from ",len(region)," differnt folders" )
         varName = var
         regionName = region[0]
         if var.find("*") != -1: return listVars(var.replace("*",""),regionName)
@@ -598,7 +600,7 @@ def stack(var, region,  **kw):
 def saveCan():
     #currentPlot['canvas'].SaveAs(pm.output+"/"+currentRegBase+"_"+currentCut+"_"+currentVar+".eps")
     currentPlot['canvas'].SaveAs(pm.output+"/"+currentRegBase+"_"+currentCut+"_"+currentVar+".pdf")
-    print "Wrote "+pm.output+"/"+currentRegBase+"_"+currentCut+"_"+currentVar+".pdf"
+    print( "Wrote "+pm.output+"/"+currentRegBase+"_"+currentCut+"_"+currentVar+".pdf")
 
 
 # ----------------------------------------------------------------------------
@@ -608,8 +610,8 @@ def listDirs(key="",dir="",depth=0,max=10):
     regions = pm.listDirs(key)
     for r in regions:
         for i in range(depth):
-            print "\t",
-        print r
+            print( "\t", end="")
+        print( r)
         if dir:
             newdir = dir+"/"+r
         else:
@@ -635,32 +637,32 @@ def getRegName(key,quiet=True):
     subdir=pm.modeling[pm.order[0]].dir
     theTDirs=pm.getListOf(TDirectory, subdir)
 
-    if not quiet:         print "Matching,",key
+    if not quiet:         print( "Matching,",key)
 
     matches = []
 
     for d in theTDirs:
         if not quiet:
-            print "\t",d
+            print( "\t",d)
 
         if not d.find(key) == -1:
-            if not quiet:  print "Found Match,",d
+            if not quiet:  print( "Found Match,",d)
             matches.append(d)
 
-    if not quiet:  print "number of matches",len(matches)
+    if not quiet:  print( "number of matches",len(matches))
 
     if len(matches) == 1:
-        if not quiet:  print "retirn ,",matches[0]
+        if not quiet:  print( "retirn ,",matches[0])
         return matches[0]
 
     if len(matches) < 1:
-        print 
-        print "ERROR No Directory Matching ",key
-        print 
+        print( )
+        print( "ERROR No Directory Matching ",key)
+        print( )
 
     if len(matches) > 1:
-        print "More than one dir match ",len(matches)
-        print "\t(returning the smallest)"
+        print( "More than one dir match ",len(matches))
+        print( "\t(returning the smallest)")
 
         len_smallest = 1e4
         smallest     = ""
@@ -668,7 +670,7 @@ def getRegName(key,quiet=True):
             if len(m) < len_smallest:
                 len_smallest = len(m)
                 smallest = m
-        print "Matched dir:",smallest
+        print( "Matched dir:",smallest)
         return smallest
             
 
@@ -679,9 +681,9 @@ def listVars(key="",region=None,subdir=None, quiet=False):
     if not subdir:
         subdir=pm.modeling[pm.order[0]].dir
 
-    #print "HERE"
-    #print pm.data
-    #print pm.data.dir
+    #print( "HERE"     )
+    #print( pm.data    )
+    #print( pm.data.dir)
 
     vars = []
     #theHists=pm.getListOf(TH1F,subdir)
@@ -696,7 +698,7 @@ def listVars(key="",region=None,subdir=None, quiet=False):
     vars.sort()
     if not quiet :
         for v in vars :
-            print v
+            print( v)
 
 
     theTDirs=pm.getListOf(TDirectory, subdir)
@@ -704,9 +706,9 @@ def listVars(key="",region=None,subdir=None, quiet=False):
     if region is None:
 
         for d in theTDirs:
-            print 
-            print d
-            print "--------------"
+            print( )
+            print( d)
+            print( "--------------")
             listVars(region=d, key=key, quiet=quiet)
 
         #return listVars(region=rand_reg,key=key, quiet=quiet)
@@ -735,7 +737,7 @@ def listVars(key="",region=None,subdir=None, quiet=False):
 
                 if not quiet :
                     for v in vars :
-                        print v
+                        print( v)
 
                 break
 

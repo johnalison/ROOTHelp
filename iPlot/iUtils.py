@@ -32,21 +32,22 @@ def parseOpts():
 
 
 def initHistory():
-    print "In initHistory"
+
+    print( "In initHistory")
     global historyPath
     historyPath = os.path.expanduser("~/pyhistory")
     try:
         import readline
-        print "imported readline."
+        print( "imported readline.")
     except ImportError:
-        print "Module readline not available."
+        print( "Module readline not available.")
     else:
 
-        import rlcompleter        
-        
+        import rlcompleter
+    
         if os.path.exists(historyPath):
             #pass
-            print "historyPath is ("+historyPath+")"
+            print( "historyPath is ("+historyPath+")")
             readline.read_history_file(historyPath)
         
         class IrlCompleter(rlcompleter.Completer):
@@ -76,12 +77,20 @@ def initHistory():
         #readline.parse_and_bind("tab: complete")
         import sys
         thisSys = sys.platform
-        onMac = (not thisSys.find('darwin') == -1)
-        if onMac:
-            readline.parse_and_bind ("bind ^I rl_complete") 
+        #onMac = (not thisSys.find('darwin') == -1)
+        #if onMac:
+        #    readline.parse_and_bind ("bind ^I rl_complete") 
+
+        import rlcompleter
+        if 'libedit' in readline.__doc__:
+            readline.parse_and_bind("bind ^I rl_complete")
+        else:
+            readline.parse_and_bind("tab: complete")
         
         #readline.parse_and_bind('tab: complete')
-        readline.set_completer(IrlCompleter('\t').complete)
+
+        # Not clear we need this....
+        #readline.set_completer(IrlCompleter('\t').complete)
     
 
     return historyPath
@@ -94,7 +103,7 @@ def save_history():
     try:
         import readline
     except ImportError:
-        print "Module readline not available."
+        print( "Module readline not available.")
     else:
         readline.write_history_file(historyPath)
 
@@ -202,8 +211,8 @@ def comp(var,reg="",**kw):
         varName = var
 
     (o,a) = parseOpts()
-    print "regName is",regName
-    print cp
+    print( "regName is",regName)
+    print( cp)
     #cp['canvas'].SaveAs(o.output+"/"+regName+"_"+varName+".eps")
     cp['canvas'].SaveAs(o.output+"/"+regName+"_"+varName+".pdf")
 

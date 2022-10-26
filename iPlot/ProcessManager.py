@@ -5,7 +5,7 @@
 #       the stacked modeling overlaid
 import os
 import math
-from ROOT import TFile,TH1F,TH2,TDirectory,ROOT, TLine, Double
+from ROOT import TFile,TH1F,TH2,TDirectory,ROOT, TLine, double
 import ROOT
 #import PlotLabeling
 
@@ -233,7 +233,7 @@ class ProcessManager:
             #nbins = hist.GetXaxis().GetNbins()
             #xrang=orighist.GetXaxis().GetXmax()-orighist.GetXaxis().GetXmin()
             xrang=rebin[-1] - rebin[0]
-            print 'nbins, range = %d %d' %(nbins, xrang)
+            print( 'nbins, range = %d %d' %(nbins, xrang))
             #xrang = binning[-1]-binning[0]
             #nbins = len(binning) - 1
             #hist.GetYaxis().SetTitle('Events /%3.0f GeV' %(xrang/nbins))
@@ -257,7 +257,7 @@ class ProcessManager:
 
 
         
-        if isinstance(rebin, basestring) and rebin.count(',') == 2 :
+        if isinstance(rebin, str) and rebin.count(',') == 2 :
             pre_rebin = int(rebin.split(',')[0])
             hist=hist.Clone(hist.GetName()+"_rebin")
             hist.Rebin(pre_rebin)
@@ -266,20 +266,20 @@ class ProcessManager:
         if do_cumulative :
             newhist = hist.Clone()
 
-            errfull = Double()
+            errfull = double()
             intfull = hist.IntegralAndError(1, hist.GetNbinsX()+2, errfull)
-            print 'intfull = %f' %intfull
+            print( 'intfull = %f' %intfull)
             for bin in range(0, hist.GetNbinsX()+2) :
-                newerr = Double()
+                newerr = double()
                 newint = hist.IntegralAndError(bin, hist.GetNbinsX()+2, newerr)
-                print 'newint = %f'%newint
+                print( 'newint = %f'%newint)
 
                 toterr = 0 
                 if intfull > 0 and newint > 0 :
                     toterr = newint/intfull * math.sqrt( (newerr/newint)*(newerr/newint) + 
                                                          (errfull/intfull)*(errfull/intfull))
                 
-                print 'content = %f' %(newint/intfull)
+                print( 'content = %f' %(newint/intfull))
                 newhist.SetBinContent(bin, newint/intfull)
                 newhist.SetBinError(bin, toterr)
 
@@ -299,7 +299,7 @@ class ProcessManager:
         thisHist = {}
 
         if self.data:
-            #print "PM: getHists data"
+            #print( "PM: getHists data")
             thisHist["Data"] = self.data.getHist(hist)
 
             if thisHist["Data"] is not None :
@@ -309,7 +309,7 @@ class ProcessManager:
         # Get the hist for each modeling type
         #
         for type in self.modeling:
-            #print "PM: getHists modeling",type
+            #print( "PM: getHists modeling",type)
             thisHist[type] = self.modeling[type].getHist(hist)
 
             if thisHist[type] is not None :
@@ -336,7 +336,7 @@ class ProcessManager:
             if thisHist[sys] is not None :
                 thisHist[sys]=self.tuneHist(thisHist[sys],do_cumulative=do_cumulative, pre_rebin=pre_rebin, **kw)
             else:
-                print "ERROR Cant get hist",hist,"from",sys
+                print( "ERROR Cant get hist",hist,"from",sys)
                 import sys
                 sys.exit(-1)
 
@@ -454,10 +454,10 @@ class ProcessManager:
             self.Normalize(thisHist,logy)
 
         #
-        # Print Yeild
+        # Print( Yeild)
         #
         if yields:
-            self.PrintYeilds(thisHist)
+            self.Print(Yeilds(thisHist))
 
         #
         # Make the list of things to stack, and names
@@ -587,14 +587,14 @@ class ProcessManager:
         max            =  kw.get('max'          ,  ROOTHelp.default)
         debug          =  kw.get('debug'        ,  False)
         
-        if debug: print "in makePlot"
+        if debug: print( "in makePlot")
 
 
         #
         # Normalize
         #
         if norm:
-            if debug: print "Normalize"
+            if debug: print( "Normalize")
             self.Normalize(thisHist,logy)
             
             if logy: 
@@ -613,7 +613,7 @@ class ProcessManager:
         # Outsource the actually stacking...
         #
         if len(thisHist) == 1:
-            if debug: print "MakeOne Plot"
+            if debug: print( "MakeOne Plot")
             thePlot = plot_hists([thisHist[self.order[0]]],
                                  thisHist[self.order[0]].GetName()+"_stack",
                                  canvas_options = can_opts,
@@ -627,40 +627,40 @@ class ProcessManager:
                 doLeg = False
             
         else:
-            if debug: print "More than One plot"
+            if debug: print( "More than One plot")
             plot_order  =  kw.get('plot_order',  None)                 
             theHists = []
             if plot_order:
-                if debug: print "plot_order"
+                if debug: print( "plot_order")
                 for pName in plot_order:
-                    if debug: print "\t",pName,thisHist[pName]
+                    if debug: print( "\t",pName,thisHist[pName])
                     theHists.append(thisHist[pName])
                     
             else:
-                if debug: print "thisHist", thisHist
+                if debug: print( "thisHist", thisHist)
                 theHists = thisHist.values(),
             
             if doratio:
-                if debug: print "Do Ratio"
+                if debug: print( "Do Ratio")
                 if self.drawErrorBand:
-                    theSysHists = self.getSysHists(thisHist.values()[0].GetName().replace("_rebin",""), **kw)
+                    theSysHists = self.getSysHists(list(thisHist.values())[0].GetName().replace("_rebin",""), **kw)
                     thePlot = plot_hists_wratio_errorband(theHists,
                                                           theSysHists.values(),
-                                                          thisHist.values()[0].GetName()+"_stack",
+                                                          list(thisHist.values())[0].GetName()+"_stack",
                                                           canvas_options = can_opts,
                                                           #max = max,
                                                           **kw)
                 else:
                     thePlot = plot_hists_wratio(theHists,
-                                                thisHist.values()[0].GetName()+"_stack",
+                                                list(thisHist.values())[0].GetName()+"_stack",
                                                 #canvas_options = can_opts,
                                                 #max = max,
                                                 **kw)
                 
             else:
-                if debug: print "No Ratio"
+                if debug: print( "No Ratio")
                 thePlot = plot_hists(theHists,
-                                     thisHist.values()[0].GetName()+"_stack",
+                                     list(thisHist.values())[0].GetName()+"_stack",
                                      canvas_options = can_opts,
                                      #max = max,
                                      #draw_options = draw_options,
@@ -740,25 +740,26 @@ class ProcessManager:
         betteronleft= (maxunderleg_left <maxunderleg_right)
         okayonleft=maxunderleg_left < leg.GetY1()
         if okayonleft or betteronleft:
-            #print "better on left"
+            #print( "better on left")
             delta=leg.GetX2NDC()-leg.GetX1NDC()
             leg.SetX1NDC(0.2)
             leg.SetX2NDC(0.2+delta)
             if okayonleft:
                 # it's okay on left, we're done
-                #print "okay on left"
+                #print( "okay on left")
                 return 
             maxunderleg=maxunderleg_left
 
         # rescale the height
         h=thePlot['hists'][0]
         r=maxunderleg/(h.GetMaximum()-(leg.GetY2()-leg.GetY1()))+0.1
-        #print "h=",maxunderleg
-        #print "l=",leg.GetY2()-leg.GetY1()
-        #print "m=",h.GetMaximum()
-        #print "r=",r
-        #print "setting=",r*h.GetMaximum()
-        print "Setting MAximum"
+        #print( "h=",maxunderleg)
+        #print( "l=",leg.GetY2()-leg.GetY1())
+        #print( "l=",leg.GetY2())
+        #print( "m=",h.GetMaximum())
+        #print( "r=",r)
+        #print( "setting=",r*h.GetMaximum())
+        print( "Setting MAximum")
         thePlot['hists'][0].SetMaximum(r*h.GetMaximum())
         
         # brutally force an update
@@ -781,14 +782,14 @@ class ProcessManager:
         
         sf = []
         for i, h in enumerate(thisHist):
-            print "Normalizing" ,h,
+            print( "Normalizing" ,h,)
             thisHist[h].Sumw2()
             if thisHist[h].Integral():
-                print "ScaleFactor",1.0/thisHist[h].Integral()
+                print( "ScaleFactor",1.0/thisHist[h].Integral())
                 sf.append(1.0/thisHist[h].Integral())
                 thisHist[h].Scale(1.0/thisHist[h].Integral())
         if len(sf)>1:
-            print "Ratio:",sf[0]/sf[1]
+            print( "Ratio:",sf[0]/sf[1])
         if doLog:
             thisMin = calc_min(thisHist.values(),ignore_zeros=True,ignore_negatives=True)
             thisMin = thisMin / 10
@@ -816,8 +817,8 @@ class ProcessManager:
                     errsq    += thisHist[p].GetBinError(bin)*thisHist[p].GetBinError(bin)
          
                 totalBkg += thisHist[p].Integral() 
-                print 'Integral %s %f +- %f' %(p, integral, math.sqrt(errsq)) 
+                print( 'Integral %s %f +- %f' %(p, integral, math.sqrt(errsq)) )
 
 
-        print 'Total Bkg :', totalBkg
+        print( 'Total Bkg :', totalBkg)
         return

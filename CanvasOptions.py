@@ -26,7 +26,7 @@ class CanvasOptions:
         kw.setdefault('pad_right_margin',  ROOTHelp.default)
         kw.setdefault('top_margin',    ROOTHelp.default)
         kw.setdefault('bottom_margin', ROOTHelp.default)
-        for k,v in kw.iteritems():
+        for k,v in kw.items():
             setattr(self, k, v)
         
 

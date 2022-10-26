@@ -4,7 +4,7 @@ import ROOT
 #
 # MetaLegend Class
 #
-class MetaLegend(ROOT.TLegend):
+class MetaLegend:
     """
     A better TLegend class that increases in height as you call AddEntry.
     """ 
@@ -32,10 +32,10 @@ class MetaLegend(ROOT.TLegend):
         elif y2 == None:
             y2 = y1 + width
 
-        ROOT.TLegend.__init__(self, x1, y1, x2, y2)
-        self.SetBorderSize(border)
-        self.SetFillColor(fill_color)
-        self.SetFillStyle(fill_style)
+        self.leg = ROOT.TLegend(x1, y1, x2, y2)
+        self.leg.SetBorderSize(border)
+        self.leg.SetFillColor(fill_color)
+        self.leg.SetFillStyle(fill_style)
         self.width = width
         self.height = height # per entry
         self._nentries = 0
@@ -44,17 +44,19 @@ class MetaLegend(ROOT.TLegend):
     def AddEntry(self, obj, label='', option='P'):
         self._nentries += 1
         self.resize()
-        ROOT.TLegend.AddEntry(self, obj, label, option)
+        self.leg.AddEntry(obj, label, option)
 
     def Draw(self):
         self.resize()
-        ROOT.TLegend.Draw(self)
+        #ROOT.TLegend.Draw()
+        #print("Self is ",self)
+        self.leg.Draw()
         self._has_drawn = True
 
     def resize(self):
         if self._has_drawn:
-            y2 = self.GetY2NDC()
-            self.SetY1NDC(y2 - (self.height*self._nentries) - 0.01)
+            y2 = self.leg.GetY2NDC()
+            self.leg.SetY1NDC(y2 - (self.height*self._nentries) - 0.01)
         else:
-            y2 = self.GetY2()
-            self.SetY1(y2 - (self.height*self._nentries) - 0.01)
+            y2 = self.leg.GetY2()
+            self.leg.SetY1(y2 - (self.height*self._nentries) - 0.01)
